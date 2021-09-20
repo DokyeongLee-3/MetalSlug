@@ -7,6 +7,7 @@
 class CAnimation
 {
 	friend class CGameObject;
+	friend class CPlayer;
 	friend class CUIImage;
 
 private:

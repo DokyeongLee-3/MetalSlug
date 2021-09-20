@@ -166,6 +166,7 @@
     <ClCompile Include="Object\GameObject.cpp" />
     <ClCompile Include="Object\Monster.cpp" />
     <ClCompile Include="Object\Player.cpp" />
+    <ClCompile Include="Object\Stage.cpp" />
     <ClCompile Include="PathManager.cpp" />
     <ClCompile Include="Ref.cpp" />
     <ClCompile Include="Resource\AnimationSequence.cpp" />
@@ -214,6 +215,7 @@
     <ClInclude Include="Object\GameObject.h" />
     <ClInclude Include="Object\Monster.h" />
     <ClInclude Include="Object\Player.h" />
+    <ClInclude Include="Object\Stage.h" />
     <ClInclude Include="PathManager.h" />
     <ClInclude Include="Ref.h" />
     <ClInclude Include="resource.h" />

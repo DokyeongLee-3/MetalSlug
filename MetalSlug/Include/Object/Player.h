@@ -20,6 +20,10 @@ public:
         SetAnimationPlayScale("LucidNunNaRightAttack", Speed);
     }
 
+protected:
+    CAnimation* m_TopAnimation;
+    CAnimation* m_BottomAnimation;
+
 public:
     virtual void Start();
     virtual bool Init();
@@ -37,7 +41,38 @@ private:
     void BulletFire(float DeltaTime);
     void Pause(float DeltaTime);
     void Resume(float DeltaTime);
-    void Skill1(float DeltaTime);
+
+private:
+    void CreateTopAnimation();
+    void CreateBottomAnimation();
+    void AddTopAnimation(const std::string& SequenceName,
+        bool Loop = true, float PlayTime = 1.f, float PlayScale = 1.f,
+        bool Reverse = false);
+    void AddBottomAnimation(const std::string& SequenceName,
+        bool Loop = true, float PlayTime = 1.f, float PlayScale = 1.f,
+        bool Reverse = false);
+    void SetTopAnimationPlayTime(const std::string& Name,
+        float PlayTime);
+    void SetBottomAnimationPlayTime(const std::string& Name,
+        float PlayTime);
+    void SetTopAnimationPlayScale(const std::string& Name,
+        float PlayScale);
+    void SetBottomAnimationPlayScale(const std::string& Name,
+        float PlayScale);
+    void SetTopCurrentAnimation(const std::string& Name);
+    void SetBottomCurrentAnimation(const std::string& Name);
+    void ChangeTopAnimation(const std::string& Name);
+    void ChangeBottomAnimation(const std::string& Name);
+    bool CheckTopCurrentAnimation(const std::string& Name);
+    bool CheckBottomCurrentAnimation(const std::string& Name);
+    void SetTopAnimationReverse(const std::string& Name,
+        bool Reverse);
+    void SetBottomAnimationReverse(const std::string& Name,
+        bool Reverse);
+    void SetTopAnimationLoop(const std::string& Name,
+        bool Loop);
+    void SetBottomAnimationLoop(const std::string& Name,
+        bool Loop);
 
 public:
     void AttackEnd();

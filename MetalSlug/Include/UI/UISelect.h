@@ -15,9 +15,13 @@ public:
     virtual void Start();
 
 public:
-    void ScreenAnimation();
+    void ScreenUpAnimation();
     void PauseAnimation();
     void FaceBlinkAnimation(float DeltaTime);
+    void ScreenDownAnimation();
+    void ScreenDownEffect();
+    void PlayerIdle();
+    void ConvertMainScene();
 
 public:
     void PlayCharacterSelectBGM();

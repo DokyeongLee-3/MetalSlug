@@ -31,6 +31,28 @@
 #define SAFE_DELETE_ARRAY(p)	if(p) {delete[] p; p = nullptr;}
 #define SAFE_RELEASE(p)	if(p)	{p->Release(); p = nullptr;}
 
+
+#define WORLD_WIDTH	13300.f
+#define WORLD_HEIGHT 960.f
+
+#define GRAVITY 9.8f
+#define PLAYER_SIZE 50
+#define ARABIAN_WIDTH 130
+#define ARABIAN_HEIGHT 113
+#define CAMEL_SIZE 150
+
+#define STAGE_WIDTH 13300.f
+#define STAGE_HEIGHT 960.f
+#define BACKGROUND1_WIDTH 4000.f
+#define BACKGROUND1_HEIGHT 300.f
+#define BACKGROUND2_WIDTH 2000.f
+#define BACKGROUND2_HEIGHT 400.f
+#define BACKGROUND3_WIDTH 3855.f
+#define BACKGROUND3_HEIGHT 550.f
+#define BACKGROUND4_WIDTH 3800.f
+#define BACKGROUND4_HEIGHT 750.f
+
+
 struct Resolution
 {
 	int Width;

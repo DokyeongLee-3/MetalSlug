@@ -38,15 +38,15 @@ void CSelectScene::LoadAnimationSequence()
 	}
 
 
-	GetSceneResource()->CreateAnimationSequence("SelectSceneScreenAnimation",
-		"SelectSceneScreenAnimation", TEXT("SelectScene_ScreenAnimation.bmp"));
+	GetSceneResource()->CreateAnimationSequence("SelectSceneScreenUpAnimation",
+		"SelectSceneScreenUpAnimation", TEXT("SelectScene_ScreenAnimation.bmp"));
 
-	GetSceneResource()->SetTextureColorKey("SelectSceneScreenAnimation",
+	GetSceneResource()->SetTextureColorKey("SelectSceneScreenUpAnimation",
 		255, 255, 255);
 
 	for (int i = 0; i < 23; ++i)
 	{
-		GetSceneResource()->AddAnimationFrameData("SelectSceneScreenAnimation",
+		GetSceneResource()->AddAnimationFrameData("SelectSceneScreenUpAnimation",
 			i * 1024.f, 0.f, 1024.f, 768.f);
 	}
 
@@ -81,9 +81,45 @@ void CSelectScene::LoadAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("FaceBlinkAnimation",
 		255, 255, 255);
 
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 7; ++i)
 	{
 		GetSceneResource()->AddAnimationFrameData("FaceBlinkAnimation",
+			i * 1024.f, 0.f, 1024.f, 768.f);
+	}
+
+	GetSceneResource()->CreateAnimationSequence("SelectSceneScreenDownAnimation",
+		"SelectSceneScreenDownAnimation", TEXT("SelectScene_ScreenDownAnimation.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("SelectSceneScreenDownAnimation",
+		255, 255, 255);
+
+	for (int i = 0; i < 12; ++i)
+	{
+		GetSceneResource()->AddAnimationFrameData("SelectSceneScreenDownAnimation",
+			i * 1024.f, 0.f, 1024.f, 768.f);
+	}
+
+	GetSceneResource()->CreateAnimationSequence("SelectSceneScreenDownEffect",
+		"SelectSceneScreenDownEffect", TEXT("SelectScene_ScreenDownEffect.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("SelectSceneScreenDownEffect",
+		255, 255, 255);
+
+	for (int i = 0; i < 8; ++i)
+	{
+		GetSceneResource()->AddAnimationFrameData("SelectSceneScreenDownEffect",
+			i * 1024.f, 0.f, 1024.f, 768.f);
+	}
+
+	GetSceneResource()->CreateAnimationSequence("SelectSceneIdle",
+		"SelectSceneIdle", TEXT("SelectScene_Idle.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("SelectSceneIdle",
+		255, 255, 255);
+
+	for (int i = 0; i < 18; ++i)
+	{
+		GetSceneResource()->AddAnimationFrameData("SelectSceneIdle",
 			i * 1024.f, 0.f, 1024.f, 768.f);
 	}
 }
