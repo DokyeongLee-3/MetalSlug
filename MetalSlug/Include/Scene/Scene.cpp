@@ -283,8 +283,6 @@ bool CScene::Collision(float DeltaTime)
 		}
 	}
 
-	m_Collision->CollisionMouse(DeltaTime);
-
 	m_Collision->Collision(DeltaTime);
 
 	return false;
@@ -360,8 +358,8 @@ bool CScene::Render(HDC hDC)
 	// 발밑 좌표가 큰 object를 m_RenderArray의 뒤에 오도록
 	// 해야한다. 그렇게 하기 위해 발밑 좌표 기준으로
 	// 오름차순으로 Rendering전에 sorting해준다
-	qsort(m_RenderArray, (size_t)m_RenderCount, sizeof(CGameObject*),
-		CScene::SortY);
+	/*qsort(m_RenderArray, (size_t)m_RenderCount, sizeof(CGameObject*),
+		CScene::SortY);*/
 
 	for (int i = 0; i < m_RenderCount; ++i)
 	{

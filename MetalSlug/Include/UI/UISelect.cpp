@@ -25,9 +25,9 @@ bool CUISelect::Init()
 
 	SelectBackground->CreateAnimation();
 	SelectBackground->AddAnimation("SelectSceneDarkness", false,
-		1.f);
+		1.2f);
 	SelectBackground->AddAnimation("SelectSceneScreenUpAnimation", false,
-		1.f);
+		0.8f);
 
 	SelectBackground->AddAnimation("PauseAnimation", true,
 		10000000.f);
@@ -89,6 +89,7 @@ void CUISelect::PauseAnimation()
 
 void CUISelect::FaceBlinkAnimation(float DeltaTime)
 {
+	CInput::GetInst()->ClearCallback();
 	CUIImage* Background = FindWidget<CUIImage>("SelectBackground");
 
 	Background->ChangeAnimation("FaceBlinkAnimation");

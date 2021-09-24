@@ -35,19 +35,26 @@ CSceneResource::~CSceneResource()
 		}
 	}
 
-	//{
-	//	auto	iter = m_mapSound.begin();
-	//	auto	iterEnd = m_mapSound.end();
+	{
+		auto	iter = m_mapSound.begin();
+		auto	iterEnd = m_mapSound.end();
 
-	//	for (; iter != iterEnd;)
-	//	{
-	//		std::string	Name = iter->first;
+		for (; iter != iterEnd;)
+		{
+			std::string	Name = iter->first;
 
-	//		iter = m_mapSound.erase(iter);
+			// CoinSound를 바로 Release하면 CoinSound도중
+			// SelectScene으로 넘어가서 소리가 잘리기 때문에
+			// 최소한의 지연시간을 만듬
+			if (iter->first == "CoinSound")
+			{
+				Sleep(600);
+			}
+			iter = m_mapSound.erase(iter);
 
-	//		CResourceManager::GetInst()->ReleaseSound(Name);
-	//	}
-	//}
+			CResourceManager::GetInst()->ReleaseSound(Name);
+		}
+	}
 }
 
 bool CSceneResource::LoadTexture(const std::string& Name,
@@ -201,6 +208,17 @@ void CSceneResource::AddAnimationFrameData(
 		return;
 
 	Sequence->AddFrameData(StartPos, Size);
+}
+
+void CSceneResource::AddAnimationFrameData(const std::string& SequenceName, 
+	const AnimationFrameData& Data)
+{
+	CAnimationSequence* Sequence = FindAnimationSequence(SequenceName);
+
+	if (!Sequence)
+		return;
+
+	Sequence->AddFrameData(Data);
 }
 
 void CSceneResource::AddAnimationFrameData(

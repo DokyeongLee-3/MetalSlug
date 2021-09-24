@@ -22,5 +22,11 @@ public:
 	static bool CollisionBoxToSphere(const RectInfo& Src,
 		const SphereInfo& Dest);
 
+	static bool CollisionBoxToPixel(class CColliderBox* Src,
+		class CColliderPixel* Dest);
+	static bool CollisionSphereToPixel(class CColliderSphere* Src,
+		class CColliderPixel* Dest);
+
+
 };
 

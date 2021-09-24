@@ -20,6 +20,6 @@ public:
 	// 화면밖에 있는 오브젝트들을 걸러내는 작업(Culling)을 해준다
 	virtual void PrevRender();
 	virtual void Render(HDC hDC);
-	virtual CGameObject* Clone();
+	virtual CStage* Clone();
 };
 

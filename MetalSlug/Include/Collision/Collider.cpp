@@ -26,8 +26,6 @@ CCollider::CCollider(const CCollider& collider)	:
 
 CCollider::~CCollider()
 {
-	m_Scene->GetSceneCollision()->ClearMouseCollision(this);
-
 	auto iter = m_CollisionList.begin();
 	auto iterEnd = m_CollisionList.end();
 
@@ -104,16 +102,10 @@ void CCollider::CallCollisionEnd(CCollider* Dest, float DeltaTime)
 		m_EndFunction(this, Dest, DeltaTime);
 }
 
-void CCollider::CallMouseCollisionBegin(const Vector2& MousePos, float DeltaTime)
+void CCollider::CallCollisionStay(CCollider* Dest, float DeltaTime)
 {
-	if (m_MouseBeginFunction)
-		m_MouseBeginFunction(this, MousePos, DeltaTime);
-}
-
-void CCollider::CallMouseCollisionEnd(const Vector2& MousePos, float DeltaTime)
-{
-	if (m_MouseEndFunction)
-		m_MouseEndFunction(this, MousePos, DeltaTime);
+	if (m_StayFunction)
+		m_StayFunction(this, Dest, DeltaTime);
 }
 
 bool CCollider::Init()

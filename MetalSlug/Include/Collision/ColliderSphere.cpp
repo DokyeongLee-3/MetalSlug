@@ -1,13 +1,16 @@
 
 #include "ColliderSphere.h"
 #include "ColliderBox.h"
+#include "ColliderPixel.h"
 #include "../Object/GameObject.h"
 #include "../GameManager.h"
 #include "Collision.h"
 #include "../Scene/Scene.h"
 #include "../Scene/Camera.h"
 
-CColliderSphere::CColliderSphere()
+CColliderSphere::CColliderSphere()	:
+	m_CamCollision(false),
+	m_FloorCollision(false)
 {
 	m_Info.Radius = 50.f;
 	m_Type = ECollider_Type::Sphere;
@@ -105,8 +108,8 @@ bool CColliderSphere::Collision(CCollider* Dest)
 		break;
 	case ECollider_Type::Sphere:
 		return CCollision::CollisionSphereToSphere(this, (CColliderSphere*)Dest);
-	case ECollider_Type::Point:
-		break;
+	case ECollider_Type::Pixel:
+		return CCollision::CollisionSphereToPixel(this, (CColliderPixel*)Dest);
 	default:
 		break;
 	}
@@ -114,9 +117,3 @@ bool CColliderSphere::Collision(CCollider* Dest)
 	return false;
 }
 
-bool CColliderSphere::CollisionMouse(const Vector2& MousePos)
-{
-	float Dist = Distance(m_Info.Center, MousePos);
-
-	return Dist <= m_Info.Radius;
-}

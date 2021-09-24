@@ -1,8 +1,8 @@
 #include "Camera.h"
 
 CCamera::CCamera()	:
-	m_Resolution(1280.f, 720.f),
-	m_WorldResolution(1280.f, 720.f)
+	m_Resolution(1024.f, 768.f),
+	m_WorldResolution(WORLD_WIDTH, WORLD_HEIGHT)
 {
 }
 

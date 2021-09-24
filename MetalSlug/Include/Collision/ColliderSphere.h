@@ -13,6 +13,8 @@ protected:
 
 protected:
     SphereInfo m_Info;
+    bool m_CamCollision;
+    bool m_FloorCollision;
 
 public:
     void SetRadius(float Radius)
@@ -30,6 +32,25 @@ public:
         return m_Info.Center.y + m_Info.Radius;
     }
 
+    void SetCamCollision(bool Collision)
+    {
+        m_CamCollision = Collision;
+    }
+
+    bool GetCamCollision()	const
+    {
+        return m_CamCollision;
+    }
+
+    void SetFloorCollision(bool Collision)
+    {
+        m_FloorCollision = Collision;
+    }
+
+    bool GetFloorCollision()	const
+    {
+        return m_FloorCollision;
+    }
 
 public:
     virtual bool Init();
@@ -38,6 +59,5 @@ public:
     virtual void Render(HDC hDC);
     virtual CColliderSphere* Clone();
     virtual bool Collision(CCollider* Dest);
-    virtual bool CollisionMouse(const Vector2& MousePos);
 };
 

@@ -50,5 +50,6 @@ public:
 	// CSceneResource::AddAnimationFrameData에서 아래 함수 호출
 	void AddFrameData(const Vector2& StartPos, const Vector2& Size);
 	void AddFrameData(float PosX, float PosY, float SizeX, float SizeY);
+	void AddFrameData(const AnimationFrameData& Data);
 };
 

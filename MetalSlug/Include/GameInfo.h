@@ -36,21 +36,17 @@
 #define WORLD_HEIGHT 960.f
 
 #define GRAVITY 9.8f
-#define PLAYER_SIZE 50
+
+#define PLAYER_TOPWIDTH		100
+#define PLAYER_TOPHEIGHT	78
+#define PLAYER_BOTTOMWIDTH	70
+#define PLAYER_BOTTOMHEIGHT	53
 #define ARABIAN_WIDTH 130
 #define ARABIAN_HEIGHT 113
 #define CAMEL_SIZE 150
 
 #define STAGE_WIDTH 13300.f
 #define STAGE_HEIGHT 960.f
-#define BACKGROUND1_WIDTH 4000.f
-#define BACKGROUND1_HEIGHT 300.f
-#define BACKGROUND2_WIDTH 2000.f
-#define BACKGROUND2_HEIGHT 400.f
-#define BACKGROUND3_WIDTH 3855.f
-#define BACKGROUND3_HEIGHT 550.f
-#define BACKGROUND4_WIDTH 3800.f
-#define BACKGROUND4_HEIGHT 750.f
 
 
 struct Resolution
@@ -83,6 +79,13 @@ struct AnimationFrameData
 {
 	Vector2 StartPos;
 	Vector2 Size;
+	Vector2 Offset;
+
+	AnimationFrameData() :
+		StartPos(0.f, 0.f),
+		Offset(0.f, 0.f)
+	{
+	}
 };
 
 struct CharacterInfo
@@ -117,3 +120,12 @@ struct CollisionProfile
 	// 나머지는 Ignore을 넣으면 된다.
 	std::vector<ECollision_State> vecState;
 };
+
+// bmp는 저장할 때 RGB가 아닌 BGR순으로 저장되어 있는걸 잊지말자!!
+typedef struct _tagPixel
+{
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+
+}PIXEL, * PPIXEL;

@@ -30,17 +30,23 @@ public:
     virtual void Update(float DeltaTime);
     virtual void PostUpdate(float DeltaTime);
     virtual void Collision(float DeltaTime);
+    virtual void PrevRender();
     virtual void Render(HDC hDC);
     virtual CPlayer* Clone();
 
 private:
-    void MoveUp(float DeltaTime);
+    void Jump(float DeltaTime);
     void MoveDown(float DeltaTime);
     void MoveLeft(float DeltaTime);
     void MoveRight(float DeltaTime);
+    // 총쏘는 애니메이션으로 바꿔주기만 하는 함수
     void BulletFire(float DeltaTime);
     void Pause(float DeltaTime);
     void Resume(float DeltaTime);
+    
+    // 총쏘는 애니메이션의 EndNotify로 설정해두고
+    // 총알 prototype을 만드는 함수
+    void CloneBullet();
 
 private:
     void CreateTopAnimation();
@@ -75,10 +81,48 @@ private:
         bool Loop);
 
 public:
-    void AttackEnd();
-    void Fire();
+    void TopAttackEnd();
+    void BottomAttackEnd();
 
-    void Skill1End();
-    void Skill1Enable();
+    void CollisionBegin(CCollider* Src, CCollider* Dest,
+        float DeltaTime);
+    void CollisionStay(CCollider* Src, CCollider* Dest,
+        float DeltaTime);
+
+public:
+    template <typename T>
+    void AddTopAnimationNotify(const std::string SequenceName,
+        int Frame, T* Obj, void (T::* Func)())
+    {
+        m_TopAnimation->AddNotify<T>(SequenceName, Frame,
+            Obj, Func);
+    }
+
+public:
+    template <typename T>
+    void AddBottomAnimationNotify(const std::string SequenceName,
+        int Frame, T* Obj, void (T::* Func)())
+    {
+        m_BottomAnimation->AddNotify<T>(SequenceName, Frame,
+            Obj, Func);
+    }
+
+public:
+    template <typename T>
+    void SetTopAnimationEndNotify(const std::string SequenceName,
+        T* Obj, void (T::* Func)())
+    {
+        m_TopAnimation->SetEndNotify<T>(SequenceName,
+            Obj, Func);
+    }
+
+public:
+    template <typename T>
+    void SetBottomAnimationEndNotify(const std::string SequenceName,
+        T* Obj, void (T::* Func)())
+    {
+        m_BottomAnimation->SetEndNotify<T>(SequenceName,
+            Obj, Func);
+    }
 };
 

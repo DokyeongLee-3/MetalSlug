@@ -49,5 +49,6 @@ public:
 
 public:
     void CollisionBegin(class CCollider* Src, class CCollider* Dest, float DeltaTime);
+   
 };
 

@@ -12,19 +12,43 @@ CGameObject::CGameObject()	:
 	m_MoveSpeed(200.f),
 	m_TimeScale(1.f),
 	m_Animation(nullptr),
-	m_CameraCull(false)
+	m_CameraCull(false),
+	m_Start(false),
+	m_ObjType(EObject_Type::GameObject),
+	m_PhysicsSimulate(false),
+	m_IsGround(true),
+	m_FallTime(0.f),
+	m_FallStartY(0.f),
+	m_Jump(false),
+	m_JumpVelocity(0.f),
+	m_GravityAccel(10.f),
+	m_LifeTime(0.f)
+
 {
 }
 
 CGameObject::CGameObject(const CGameObject& obj)	:
 	CRef(obj)
 {
+	m_GravityAccel = obj.m_GravityAccel;
+	m_PhysicsSimulate = obj.m_PhysicsSimulate;
+	m_IsGround = obj.m_IsGround;
+	m_FallTime = obj.m_FallTime;
+	m_FallStartY = obj.m_FallStartY;
+	m_Jump = obj.m_Jump;
+	m_JumpVelocity = obj.m_JumpVelocity;
+	m_DamageEnable = obj.m_DamageEnable;
+	m_ObjType = obj.m_ObjType;
+
+	m_Start = false;
+
 	m_Scene = obj.m_Scene;
 
 	if (obj.m_Animation)
 		m_Animation = obj.m_Animation->Clone();
 
-	m_Animation->m_Owner = this;
+	if(m_Animation)
+		m_Animation->m_Owner = this;
 
 	m_ColliderList.clear();
 
@@ -277,6 +301,8 @@ void CGameObject::SetTextureColorKey(unsigned char r,
 
 void CGameObject::Start()
 {
+	m_FallStartY = m_Pos.y;
+
 	m_Start = true;
 }
 
@@ -299,6 +325,20 @@ void CGameObject::Update(float DeltaTime)
 
 	if (m_Animation)
 		m_Animation->Update(DeltaTime);
+
+	// 중력을 적용한다.
+	if (!m_IsGround && m_PhysicsSimulate)
+	{
+		// 떨어지는 시간을 누적시켜준다.
+		m_FallTime += DeltaTime * m_GravityAccel;
+
+		float	Velocity = 0.f;
+
+		if (m_Jump)
+			Velocity = m_JumpVelocity * m_FallTime;
+
+		m_Pos.y = m_FallStartY - (Velocity - 0.5f * GRAVITY * m_FallTime * m_FallTime);
+	}
 
 	auto iter = m_ColliderList.begin();
 	auto iterEnd = m_ColliderList.end();
@@ -416,7 +456,7 @@ void CGameObject::Render(HDC hDC)
 		const AnimationFrameData& FrameData =
 			AnimInfo->Sequence->GetFrameData(AnimInfo->Frame);
 
-		Vector2 LT = m_RenderPos - m_Pivot * FrameData.Size + m_Offset;
+		Vector2 LT = m_RenderPos - m_Pivot * FrameData.Size + FrameData.Offset + m_Offset;
 
 		if (AnimInfo->Sequence->GetTextureType() == ETexture_Type::Atlas)
 		{
@@ -436,6 +476,8 @@ void CGameObject::Render(HDC hDC)
 	else
 	{
 		Vector2 LT = m_RenderPos - m_Pivot * m_Size + m_Offset;
+
+
 
 		if (m_Texture)
 		{

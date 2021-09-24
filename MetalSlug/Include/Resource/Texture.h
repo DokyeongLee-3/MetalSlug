@@ -37,6 +37,8 @@ class CTexture	:
 	public CRef
 {
 
+	friend class CStage;
+
 public:
 	CTexture();
 	~CTexture();

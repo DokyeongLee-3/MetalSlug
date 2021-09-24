@@ -19,6 +19,7 @@ enum class ECollider_Type
 {
 	Box,
 	Sphere,
+	Pixel,
 	Point
 };
 
@@ -45,4 +46,12 @@ enum class EButton_State
 	Click,
 	Disable,
 	End
+};
+
+enum class EObject_Type
+{
+	GameObject,
+	Character,
+	Bullet,
+	Effect
 };

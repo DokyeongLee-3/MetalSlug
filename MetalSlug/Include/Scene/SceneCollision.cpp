@@ -10,9 +10,6 @@ CSceneCollision::CSceneCollision()
 {
 	m_vecCollider.reserve(500);
 	m_vecUIWindow.reserve(10);
-	m_SelectWidget = nullptr;
-	m_MouseHoveredWidget = nullptr;
-	m_MouseCollision = nullptr;
 }
 
 CSceneCollision::~CSceneCollision()
@@ -27,138 +24,6 @@ void CSceneCollision::AddCollider(CCollider* Collider)
 void CSceneCollision::AddUIWindow(CUIWindow* Window)
 {
 	m_vecUIWindow.push_back(Window);
-}
-
-void CSceneCollision::CollisionMouse(float DeltaTime)
-{
-	Vector2 MousePos = CInput::GetInst()->GetMousePos();
-	Vector2 MouseWorldPos = MousePos + m_Scene->GetCamera()->GetPos();
-
-	int WidgetCount = 0;
-
-	// 존재하는 모든 윈도우에서 갖고 있는 위젯의 수를 합친다
-	size_t WindowCount = m_vecUIWindow.size();
-	for (size_t i = 0; i < WindowCount; ++i)
-	{
-		WidgetCount += m_vecUIWindow[i]->GetWidgetCount();
-	}
-
-	std::vector<CUIWidget*> vecWidget;
-	vecWidget.resize(WidgetCount);
-
-	int WidgetOffset = 0;
-
-	if (m_SelectWidget)
-	{
-		vecWidget[WidgetOffset] = m_SelectWidget;
-		++WidgetOffset;
-	}
-
-	for (size_t i = 0; i < WindowCount; ++i)
-	{
-		int Count = m_vecUIWindow[i]->GetWidgetCount();
-
-		for (int j = 0; j < Count; ++j)
-		{
-			CUIWidget* Widget = m_vecUIWindow[i]->GetWidget(j);
-
-			if (Widget != m_SelectWidget)
-			{
-				vecWidget[WidgetOffset] = Widget;
-				++WidgetOffset;
-			}
-		}
-	}
-
-	// 마우스와 UI간의 충돌 로직
-	// 하나라도 충돌이 됐다면 그 뒤에 Widget은 
-	// 충돌 여부를 확인할 필요가 없다.
-	bool EnableCollision = false;
-
-	for (int i = 0; i < WidgetCount; ++i)
-	{
-		if (vecWidget[i]->CollisionMouse(MousePos, DeltaTime))
-		{
-			if (m_MouseHoveredWidget && m_MouseHoveredWidget != vecWidget[i])
-			{
-				m_MouseHoveredWidget->CollisionMouseReleaseCallback(DeltaTime);
-			}
-
-			if (m_MouseCollision)
-			{
-				m_MouseCollision->SetMouseCollision(false);
-				m_MouseCollision = nullptr;
-			}
-
-			m_MouseHoveredWidget = vecWidget[i];
-
-			EnableCollision = true;
-
-			break;
-		}
-	}
-
-	// 만약 위에서 아무 Widget과 충돌하지 않았다면
-	// Object들과 충돌을 검사한다
-	if (!EnableCollision)
-	{	
-		// 혹시 위에서 마우스와 충돌한 Widget이 아직 
-		// m_MouseHoveredWidget에 남아있다면 Release해준다
-		if (m_MouseHoveredWidget)
-		{
-			m_MouseHoveredWidget->CollisionMouseReleaseCallback(DeltaTime);
-			m_MouseHoveredWidget = nullptr;
-		}
-
-		if (m_SelectWidget)
-			m_SelectWidget = nullptr;
-		
-
-		// 마우스와 Object들간의 충돌을 검사한다
-		// 화면에 나오는 충돌체들만 검사한다
-		size_t Size = m_vecCollider.size();
-
-		if (Size > 1)
-		{
-			qsort(&m_vecCollider[0], (size_t)Size, sizeof(CCollider*),
-				CSceneCollision::SortY);
-
-			bool MouseCollision = false;
-
-			for (size_t i = 0; i < Size; ++i)
-			{
-				if (m_vecCollider[i]->CollisionMouse(MouseWorldPos))
-				{
-					// 지금 m_vecCollider[i]와 충돌했는데 그전에 
-					// 충돌한 충돌체가 m_MouseCollision에 남아있다면
-					// 그 충돌체의 m_MouseCollision을 false로 만든다
-					// Collider::m_MouseCollision는 충돌체를 녹색으로 그릴지
-					// 빨간색으로 그릴지 판단하는데 사용된다
-					if (m_MouseCollision)
-						m_MouseCollision->SetMouseCollision(false);
-
-					m_MouseCollision = m_vecCollider[i];
-					m_MouseCollision->SetMouseCollision(true);
-
-					MouseCollision = true;
-				}
-			}
-			
-			if (!MouseCollision)
-			{
-				// 이전 프레임들에서 마우스와 오브젝트 충돌체간의
-				// 충돌이 있었으나 이번 프레임엔 충돌이 일어나지
-				// 않을 경우에는 SceneCollision::m_MouseCollision과
-				// CCollider::m_MouseCollision을 충돌하지 않은 상태로
-				// 만들어준다
-				if (m_MouseCollision)
-				{
-					m_MouseCollision->SetMouseCollision(false);
-					m_MouseCollision = nullptr;
-				}
-			}
-		}
-	}
 }
 
 int CSceneCollision::SortY(const void* Src, const void* Dest)
@@ -225,6 +90,14 @@ void CSceneCollision::Collision(float DeltaTime)
 
 						Src->CallCollisionBegin(Dest, DeltaTime);
 						Dest->CallCollisionBegin(Src, DeltaTime);
+					}
+
+					// 이전 프레임에서도 충돌했고,
+					// 이번 프레임에서도 계속 충돌중이고
+					else if (Src->CheckCollisionList(Dest))
+					{
+						Src->CallCollisionStay(Dest, DeltaTime);
+						Dest->CallCollisionStay(Src, DeltaTime);
 					}
 				}
 

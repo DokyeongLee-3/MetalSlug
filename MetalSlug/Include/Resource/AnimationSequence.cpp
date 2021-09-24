@@ -35,3 +35,8 @@ void CAnimationSequence::AddFrameData(float PosX, float PosY, float SizeX, float
 
 	m_vecFrameData.push_back(Data);
 }
+
+void CAnimationSequence::AddFrameData(const AnimationFrameData& Data)
+{
+	m_vecFrameData.push_back(Data);
+}

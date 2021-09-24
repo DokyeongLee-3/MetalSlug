@@ -12,7 +12,7 @@ CBullet::CBullet()
 
 	m_Distance = 800.f;
 
-	SetMoveSpeed(500.f);
+	SetMoveSpeed(800.f);
 }
 
 CBullet::CBullet(const CBullet& obj)	:
@@ -49,20 +49,17 @@ bool CBullet::Init()
 
 	SetPivot(0.5f, 0.5f);
 
-	CreateAnimation();
-	AddAnimation("Bullet", true, 1.f);
+	//CreateAnimation();
+	//AddAnimation("Bullet", true, 1.f);
+
+	SetTexture("Bullet", TEXT("Bullet.bmp"));
 
 	// 이미 MainScene::Init에서 Prototype만들때
 	// Collider를 만들어줬고 Scene의 m_Prototype에 있는
 	// Prototype을 복사해서 쓸 것이므로 아래 설정 필요x
-	//CColliderBox* Body = AddCollider<CColliderBox>("Body");
-	//Body->SetExtent(50.f, 50.f);
-	//Body->SetOffset(0.f, 0.f);
-	//Body->SetCollisionBeginFunction<CBullet>(this,
-	//	&CBullet::CollisionBegin);
 
 	CColliderSphere* Body = AddCollider<CColliderSphere>("Body");
-	Body->SetRadius(25.f);
+	Body->SetRadius(8.f);
 	Body->SetOffset(0.f, 0.f);
 
 	return true;
@@ -110,7 +107,18 @@ void CBullet::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 {
 	Destroy();
 
+	int Random = rand() % 10;
+	int Sign = rand() % 2;
+
+	if (Sign == 0)
+		Sign = -1;
+
+	Vector2 BulletExplosion = { m_Pos.x + Random * Sign,
+		m_Pos.y + Random * Sign - 25.f };
+
 	CEffectHit* Hit = m_Scene->CreateObject<CEffectHit>(
-		"HitEffect", "HitEffect",
-		m_Pos, Vector2(178.f, 164.f));
+		"NormalAttacEffect", "NormalAttacEffect",
+		BulletExplosion,
+		Vector2(66.f, 125.f));
 }
+

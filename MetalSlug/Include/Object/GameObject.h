@@ -37,10 +37,64 @@ protected:
 	Vector2		m_ImageStart;
 	std::list<CSharedPtr<CCollider>> m_ColliderList;
 	// 카메라 영역 밖에 있다면 true
-	bool m_CameraCull;
-	bool m_Start;
+	bool		m_CameraCull;
+	bool		m_Start;
+	EObject_Type	m_ObjType;
+
+	float		m_LifeTime;
+	bool		m_PhysicsSimulate;
+	float		m_GravityAccel;
+	bool		m_IsGround;
+	float		m_FallTime;
+	float		m_FallStartY;
+	bool		m_Jump;
+	float		m_JumpVelocity;
+
+	bool m_DamageEnable;
 
 public:
+	void SetLifeTime(float Time)
+	{
+		m_LifeTime = Time;
+	}
+
+	void SetGravityAccel(float Accel)
+	{
+		m_GravityAccel = Accel;
+	}
+
+	void SetPhysicsSimulate(bool Physics)
+	{
+		m_PhysicsSimulate = Physics;
+	}
+
+	void SetJumpVelocity(float JumpVelocity)
+	{
+		m_JumpVelocity = JumpVelocity;
+	}
+
+	void Jump()
+	{
+		if (!m_Jump)
+		{
+			m_Jump = true;
+			m_IsGround = false;
+
+			m_FallStartY = m_Pos.y;
+		}
+	}
+
+	void DamageEnable(bool Enable)
+	{
+		m_DamageEnable = Enable;
+	}
+
+	EObject_Type GetObjType()	const
+	{
+		return m_ObjType;
+	}
+
+
 	bool IsCull()	const
 	{
 		return m_CameraCull;

@@ -91,6 +91,15 @@
     <Filter Include="03.Object\04.StaticObject">
       <UniqueIdentifier>{5c5e0471-486f-48ac-be4b-bf4d2004ddbc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03.Object\04.StaticObject\01.Stage">
+      <UniqueIdentifier>{bb3ad649-0bf4-462b-9465-8691d1aab604}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.Object\04.StaticObject\02.Background">
+      <UniqueIdentifier>{62366e0f-7309-4e92-8c19-f0b661c6b3a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.Object\04.StaticObject\03.Obstacle">
+      <UniqueIdentifier>{bc5b272e-92b2-43c0-b1ef-5d24d579cfea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -204,8 +213,17 @@
     <ClCompile Include="Resource\Sound.cpp">
       <Filter>04.Resource\03.Sound</Filter>
     </ClCompile>
+    <ClCompile Include="Collision\ColliderPixel.cpp">
+      <Filter>06.Collision</Filter>
+    </ClCompile>
     <ClCompile Include="Object\Stage.cpp">
-      <Filter>03.Object\04.StaticObject</Filter>
+      <Filter>03.Object\04.StaticObject\01.Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Background.cpp">
+      <Filter>03.Object\04.StaticObject\02.Background</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Obstacle.cpp">
+      <Filter>03.Object\04.StaticObject\03.Obstacle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -356,8 +374,17 @@
     <ClInclude Include="Resource\Sound.h">
       <Filter>04.Resource\03.Sound</Filter>
     </ClInclude>
+    <ClInclude Include="Collision\ColliderPixel.h">
+      <Filter>06.Collision</Filter>
+    </ClInclude>
     <ClInclude Include="Object\Stage.h">
-      <Filter>03.Object\04.StaticObject</Filter>
+      <Filter>03.Object\04.StaticObject\01.Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Background.h">
+      <Filter>03.Object\04.StaticObject\02.Background</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Obstacle.h">
+      <Filter>03.Object\04.StaticObject\03.Obstacle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

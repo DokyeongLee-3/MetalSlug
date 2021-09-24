@@ -111,12 +111,14 @@ void CTexture::Render(HDC hDC, const Vector2& WindowPos,
 		// 9번 인자 : 출력할 이미지 가로 크기
 		// 10번 인자 : 출력할 이미지 세로 크기
 		// 11번 인자 : ColorKey
-		TransparentBlt(hDC, (int)WindowPos.x, (int)WindowPos.y
+		bool suc = TransparentBlt(hDC, (int)WindowPos.x, (int)WindowPos.y
 			, (int)Size.x, (int)Size.y,
 			m_vecTextureInfo[Index]->hDC,
 			(int)ImgPos.x, (int)ImgPos.y,
 			(int)Size.x, (int)Size.y,
 			m_vecTextureInfo[Index]->ColorKey);
+
+		int a = 3;
 	}
 
 	else

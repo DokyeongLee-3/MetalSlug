@@ -15,6 +15,8 @@ protected:
 	float	m_Height;
 	// World¡¬«• ±‚¡ÿ
 	RectInfo	m_Info;
+	bool m_CamCollision;
+	bool m_FloorCollision;
 
 public:
 	void SetExtent(float Width, float Height)
@@ -33,6 +35,25 @@ public:
 		return m_Info.Bottom;
 	}
 
+	void SetCamCollision(bool Collision)
+	{
+		m_CamCollision = Collision;
+	}
+
+	bool GetCamCollision()	const
+	{
+		return m_CamCollision;
+	}
+
+	void SetFloorCollision(bool Collision)
+	{
+		m_FloorCollision = Collision;
+	}
+
+	bool GetFloorCollision()	const
+	{
+		return m_FloorCollision;
+	}
 
 public:
 	virtual bool Init();
@@ -41,6 +62,5 @@ public:
 	virtual void Render(HDC hDC);
 	virtual CColliderBox* Clone();
 	virtual bool Collision(CCollider* Dest);
-	virtual bool CollisionMouse(const Vector2& MousePos);
 };
 

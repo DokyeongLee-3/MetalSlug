@@ -21,13 +21,25 @@ protected:
 	CollisionProfile* m_Profile;
 	std::function<void(CCollider*, CCollider*, float)> m_BeginFunction;
 	std::function<void(CCollider*, CCollider*, float)> m_EndFunction;
-
-	std::function<void(CCollider*, const Vector2&, float)> m_MouseBeginFunction;
-	std::function<void(CCollider*, const Vector2&, float)> m_MouseEndFunction;
+	std::function<void(CCollider*, CCollider*, float)> m_StayFunction;
+	
 
 	std::list<CSharedPtr<CCollider>> m_CollisionList;
 
 	bool m_MouseCollision;
+	Vector2 m_HitPoint;
+
+public:
+	void SetHitPoint(float x, float y)
+	{
+		m_HitPoint.x = x;
+		m_HitPoint.y = y;
+	}
+
+	Vector2 GetHitPoint()	const
+	{
+		return m_HitPoint;
+	}
 
 public:
 	void SetMouseCollision(bool MouseCollision)
@@ -101,10 +113,7 @@ public:
 	void ClearCollisionList();
 	void CallCollisionBegin(CCollider* Dest, float DeltaTime);
 	void CallCollisionEnd(CCollider* Dest, float DeltaTime);
-	void CallMouseCollisionBegin(const Vector2& MousePos,
-		float DeltaTime);
-	void CallMouseCollisionEnd(const Vector2& MousePos,
-		float DeltaTime);
+	void CallCollisionStay(CCollider* Dest, float DeltaTime);
 
 public:
 	virtual bool Init();
@@ -113,7 +122,6 @@ public:
 	virtual void Render(HDC hDC);
 	virtual CCollider* Clone();
 	virtual bool Collision(CCollider* Dest) = 0;
-	virtual bool CollisionMouse(const Vector2& MousePos) = 0;
 
 	template <typename T>
 	void SetCollisionBeginFunction(T* Obj, void (T::* Func)(CCollider*, CCollider*, float))
@@ -123,25 +131,16 @@ public:
 	}
 
 	template <typename T>
+	void SetCollisionStayFunction(T* Obj, void (T::* Func)(CCollider*, CCollider*, float))
+	{
+		m_StayFunction = std::bind(Func, Obj, std::placeholders::_1,
+			std::placeholders::_2, std::placeholders::_3);
+	}
+
+	template <typename T>
 	void SetCollisionEndFunction(T* Obj, void(T::* Func)(CCollider*, CCollider*, float))
 	{
 		m_EndFunction = std::bind(Func, Obj, std::placeholders::_1,
-			std::placeholders::_2, std::placeholders::_3);
-	}
-
-	template <typename T>
-	void SetMouseCollisionBeginFunction(T* Obj, 
-		void(T::* Func)(CCollider*, const Vector2&, float))
-	{
-		m_MouseBeginFunction = std::bind(Func, Obj, std::placeholders::_1,
-			std::placeholders::_2, std::placeholders::_3);
-	}
-
-	template <typename T>
-	void SetMouseCollisionEndFunction(T* Obj,
-		void(T::* Func)(CCollider*, const Vector2&, float))
-	{
-		m_MouseEndFunction = std::bind(Func, Obj, std::placeholders::_1,
 			std::placeholders::_2, std::placeholders::_3);
 	}
 

@@ -6,11 +6,14 @@
 #include "Collision.h"
 #include "../Scene/Scene.h"
 #include "../Scene/Camera.h"
+#include "ColliderPixel.h"
 
 
 CColliderBox::CColliderBox()	:
 	m_Width(100.f),
-	m_Height(100.f)
+	m_Height(100.f),
+	m_CamCollision(false),
+	m_FloorCollision(false)
 {
 	m_Type = ECollider_Type::Box;
 }
@@ -67,15 +70,15 @@ void CColliderBox::Render(HDC hDC)
 	RectInfo RenderInfo = m_Info;
 
 
-	RenderInfo.Left -= Camera->GetPos().x;
-	RenderInfo.Right -= Camera->GetPos().x;
-	RenderInfo.Top -= Camera->GetPos().y;
-	RenderInfo.Bottom -= Camera->GetPos().y;
+	//RenderInfo.Left -= Camera->GetPos().x;
+	//RenderInfo.Right -= Camera->GetPos().x;
+	//RenderInfo.Top -= Camera->GetPos().y;
+	//RenderInfo.Bottom -= Camera->GetPos().y;
 
-	RECT	rc = { (long)RenderInfo.Left, (long)RenderInfo.Top,
-		(long)RenderInfo.Right, (long)RenderInfo.Bottom };
+	//RECT	rc = { (long)RenderInfo.Left, (long)RenderInfo.Top,
+	//	(long)RenderInfo.Right, (long)RenderInfo.Bottom };
 
-	FrameRect(hDC, &rc, Brush);
+	//FrameRect(hDC, &rc, Brush);
 #endif // _DEBUG
 
 }
@@ -95,27 +98,12 @@ bool CColliderBox::Collision(CCollider* Dest)
 		return CCollision::CollisionBoxToSphere(this, (CColliderSphere*)Dest);
 	case ECollider_Type::Point:
 		break;
+	case ECollider_Type::Pixel:
+		return CCollision::CollisionBoxToPixel(this, (CColliderPixel*)Dest);
 	default:
 		break;
 	}
 
-
 	return false;
 }
 
-bool CColliderBox::CollisionMouse(const Vector2& MousePos)
-{
-	if (m_Info.Left > MousePos.x)
-		return false;
-
-	else if (m_Info.Right < MousePos.x)
-		return false;
-
-	else if (m_Info.Top > MousePos.y)
-		return false;
-
-	else if (m_Info.Bottom < MousePos.y)
-		return false;
-
-	return true;
-}

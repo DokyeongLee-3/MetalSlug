@@ -53,9 +53,9 @@ void CMonster::Update(float DeltaTime)
 
 	//m_Pos += m_Dir * 300.f * DeltaTime;
 
-	if (m_Pos.y >= 720.f)
+	if (m_Pos.y >= 768.f)
 	{
-		m_Pos.y = 720.f;
+		m_Pos.y = 768.f;
 		m_Dir.y = -1.f;
 	}
 

@@ -125,7 +125,11 @@ void CAnimation::ChangeAnimation(const std::string& Name)
 
 	// 원래 진행중인 애니메이션의 frame을 0으로 돌려놓고
 	// 다른것으로 변경
-	m_CurrentAnimation->Frame = 0;
+	if (m_CurrentAnimation->Reverse)
+		m_CurrentAnimation->Frame = m_CurrentAnimation->Sequence->GetFrameCount() - 1;
+	else
+		m_CurrentAnimation->Frame = 0;
+
 	m_CurrentAnimation->Time = 0.f;
 
 	size_t Size = m_CurrentAnimation->vecNotify.size();
@@ -137,7 +141,11 @@ void CAnimation::ChangeAnimation(const std::string& Name)
 
 	m_CurrentAnimation = FindInfo(Name);
 
-	m_CurrentAnimation->Frame = 0;
+	if (m_CurrentAnimation->Reverse)
+		m_CurrentAnimation->Frame = m_CurrentAnimation->Sequence->GetFrameCount() - 1;
+	else
+		m_CurrentAnimation->Frame = 0;
+
 	m_CurrentAnimation->Time = 0.f;
 	m_CurrentAnimation->FrameTime = m_CurrentAnimation->PlayTime / m_CurrentAnimation->Sequence->GetFrameCount();
 }

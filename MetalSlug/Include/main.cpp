@@ -11,6 +11,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	//_CrtSetBreakAlloc(357);
 	//new char;
 
+	srand((unsigned int)GetTickCount());
+	rand();
+
 	if (!CGameManager::GetInst()->Init(hInstance))
 	{
 		CGameManager::DestoryInst();
