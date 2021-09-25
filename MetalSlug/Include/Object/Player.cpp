@@ -39,6 +39,9 @@ void CPlayer::Start()
 	CInput::GetInst()->SetCallback<CPlayer>("Down",
 		KeyState_Push, this, &CPlayer::Down);
 
+	CInput::GetInst()->SetCallback<CPlayer>("LookUp",
+		KeyState_Push, this, &CPlayer::LookUp);
+
 	CInput::GetInst()->SetCallback<CPlayer>("MoveLeft",
 		KeyState_Push, this, &CPlayer::MoveLeft);
 
@@ -108,9 +111,23 @@ bool CPlayer::Init()
 	SetTopAnimationEndNotify<CPlayer>("PlayerJumpAttackDownLeftTop",
 		this, &CPlayer::TopAttackEnd);
 
+	AddTopAnimation("PlayerLookUpRightTop", true, 0.8f);
+	AddTopAnimation("PlayerLookUpLeftTop", true, 0.8f, 1.f, true);
 
-	//AddAnimationNotify<CPlayer>("LucidNunNaRightAttack",
-	//	2, this, &CPlayer::Fire);
+	AddTopAnimation("PlayerLookUpAttackRightTop", false, 0.2f);
+	AddTopAnimation("PlayerLookUpAttackLeftTop", false, 0.2f, 1.f, true);
+
+	AddTopAnimationNotify<CPlayer>("PlayerLookUpAttackRightTop",
+		1, this, &CPlayer::CloneBullet);
+	AddTopAnimationNotify<CPlayer>("PlayerLookUpAttackLeftTop",
+		8, this, &CPlayer::CloneBullet);
+
+	SetTopAnimationEndNotify<CPlayer>("PlayerLookUpAttackRightTop",
+		this, &CPlayer::TopAttackEnd);
+	SetTopAnimationEndNotify<CPlayer>("PlayerLookUpAttackLeftTop",
+		this, &CPlayer::TopAttackEnd);
+
+
 	SetTopAnimationEndNotify<CPlayer>("PlayerNormalFireRightTop",
 		this, &CPlayer::TopAttackEnd);
 	SetBottomAnimationEndNotify<CPlayer>("PlayerNormalFireRightBottom",
@@ -200,11 +217,31 @@ void CPlayer::PostUpdate(float DeltaTime)
 	// 현재 애니메이션이 Walk인데 속도가 0이다는 것은
 	// 멈췄다는 의미이다.
 
+
 	std::string CurBottomAnimation = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
+	std::string CurTopAnimation = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 
 	if (CurBottomAnimation.find("Run") != std::string::npos)
 	{
 		if (m_Velocity.Length() == 0.f)
+		{
+			if (CurBottomAnimation.find("Right") != std::string::npos)
+			{
+				m_TopAnimation->ChangeAnimation("PlayerIdleRightTop");
+				m_BottomAnimation->ChangeAnimation("PlayerIdleRightBottom");
+			}
+
+			else
+			{
+				m_TopAnimation->ChangeAnimation("PlayerIdleLeftTop");
+				m_BottomAnimation->ChangeAnimation("PlayerIdleLeftBottom");
+			}
+		}
+	}
+
+	if (CurTopAnimation.find("LookUp") != std::string::npos)
+	{
+		if (!(GetAsyncKeyState('W') & 0x8000))
 		{
 			if (CurBottomAnimation.find("Right") != std::string::npos)
 			{
@@ -461,6 +498,27 @@ void CPlayer::Down(float DeltaTime)
 	}
 }
 
+void CPlayer::LookUp(float DeltaTime)
+{
+	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+
+	// 현재 공격중이 아닐때만 LookUp유지
+	if (CurTop.find("Attack") == std::string::npos)
+	{
+		if (CurTop.find("Right") != std::string::npos)
+		{
+			ChangeTopAnimation("PlayerLookUpRightTop");
+		}
+
+		else if (CurTop.find("Left") != std::string::npos)
+		{
+			ChangeTopAnimation("PlayerLookUpLeftTop");
+		}
+	}
+
+
+}
+
 void CPlayer::MoveLeft(float DeltaTime)
 {
 	Move(Vector2(-1.f, 0.f));
@@ -505,6 +563,16 @@ void CPlayer::BulletFire(float DeltaTime)
 	else if (!m_IsGround && CurTop == "PlayerJumpDownLeftTop")
 	{
 		m_TopAnimation->ChangeAnimation("PlayerJumpAttackDownLeftTop");
+	}
+
+	else if (CurTop == "PlayerLookUpRightTop")
+	{
+		m_TopAnimation->ChangeAnimation("PlayerLookUpAttackRightTop");
+	}
+
+	else if (CurTop == "PlayerLookUpLeftTop")
+	{
+		m_TopAnimation->ChangeAnimation("PlayerLookUpAttackLeftTop");
 	}
 
 	else if (CurTop == "PlayerIdleRightTop" && CurBottom == "PlayerIdleRightBottom")
@@ -558,14 +626,20 @@ void CPlayer::CloneBullet()
 		Bullet->SetDir(0.f, 1.f);
 	}
 
-	else if (CurTop.find("Right") != std::string::npos)
+	else if (CurTop.find("LookUp") != std::string::npos)
+	{
+		Bullet->SetPos(m_Pos - Vector2(0.f, PLAYER_TOPHEIGHT + 5.f));
+		Bullet->SetDir(0.f, -1.f);
+	}
+
+	else if (CurTop.find("FireRight") != std::string::npos)
 	{
 		Bullet->SetPos(m_Pos + Vector2(PLAYER_TOPWIDTH / 2.f + 10.f,
 			-(PLAYER_BOTTOMHEIGHT + PLAYER_TOPHEIGHT / 2.f) + 10.f));
 		Bullet->SetDir(1.f, 0.f);
 	}
 
-	else if (CurTop.find("Left") != std::string::npos)
+	else if (CurTop.find("FireLeft") != std::string::npos)
 	{
 		Bullet->SetPos(m_Pos + Vector2(-PLAYER_TOPWIDTH / 2.f - 10.f,
 			-(PLAYER_BOTTOMHEIGHT + PLAYER_TOPHEIGHT / 2.f) + 10.f));
@@ -754,6 +828,16 @@ void CPlayer::TopAttackEnd()
 	else if (CurTop == "PlayerNormalFireLeftTop")
 	{
 		m_TopAnimation->ChangeAnimation("PlayerIdleLeftTop");
+	}
+
+	else if (CurTop == "PlayerLookUpAttackRightTop")
+	{
+		m_TopAnimation->ChangeAnimation("PlayerLookUpRightTop");
+	}
+
+	else if (CurTop == "PlayerLookUpAttackLeftTop")
+	{
+		m_TopAnimation->ChangeAnimation("PlayerLookUpLeftTop");
 	}
 }
 

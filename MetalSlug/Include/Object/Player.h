@@ -37,6 +37,7 @@ public:
 private:
     void Jump(float DeltaTime);
     void Down(float DeltaTime);
+    void LookUp(float DeltaTime);
     void MoveLeft(float DeltaTime);
     void MoveRight(float DeltaTime);
     // 총쏘는 애니메이션으로 바꿔주기만 하는 함수

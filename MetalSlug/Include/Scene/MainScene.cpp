@@ -630,6 +630,115 @@ void CMainScene::LoadAnimationSequence()
 	}
 
 	fclose(FileStream);
+
+	// PlayerLookUp Animation //
+
+	GetSceneResource()->CreateAnimationSequence("PlayerLookUpRightTop",
+		"PlayerLookUpRightTop", TEXT("Player/Right/LookUp/LookUpTop.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerLookUpRightTop",
+		255, 255, 255);
+
+	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
+	fopen_s(&FileStream, "PlayerLookUpRightTop.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerLookUpRightTop", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+	GetSceneResource()->CreateAnimationSequence("PlayerLookUpLeftTop",
+		"PlayerLookUpLeftTop", TEXT("Player/Left/LookUp/LookUpTop.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerLookUpLeftTop",
+		255, 255, 255);
+
+	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
+	fopen_s(&FileStream, "PlayerLookUpLeftTop.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerLookUpLeftTop", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+
+	// PlayerLookUpAttack
+
+	GetSceneResource()->CreateAnimationSequence("PlayerLookUpAttackRightTop",
+		"PlayerLookUpAttackRightTop", TEXT("Player/Right/LookUp/LookUpNormalAttackTop.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerLookUpAttackRightTop",
+		255, 255, 255);
+
+	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
+	fopen_s(&FileStream, "PlayerLookUpAttackRightTop.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 10; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerLookUpAttackRightTop", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+	GetSceneResource()->CreateAnimationSequence("PlayerLookUpAttackLeftTop",
+		"PlayerLookUpAttackLeftTop", TEXT("Player/Left/LookUp/LookUpNormalAttackTop.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerLookUpAttackLeftTop",
+		255, 255, 255);
+
+	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
+	fopen_s(&FileStream, "PlayerLookUpAttackLeftTop.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 10; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerLookUpAttackLeftTop", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
 }
 
 void CMainScene::LoadBackground()
@@ -648,7 +757,7 @@ void CMainScene::LoadBackground()
 	SandyWave1->SetPivot(0.f, 0.f);
 	SandyWave1->SetPhysicsSimulate(false);
 	SandyWave1->CreateAnimation();
-	SandyWave1->AddAnimation("SandyWave", true, 2.f, 1.f, false);
+	SandyWave1->AddAnimation("SandyWave", true, 1.5f, 1.f, false);
 
 	CBackground* SandyWave2 = CreateObject<CBackground>("SandyWave2");
 	SandyWave2->SetPos(700.f, 500.f);
