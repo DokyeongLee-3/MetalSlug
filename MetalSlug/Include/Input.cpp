@@ -115,7 +115,7 @@ bool CInput::Init(HWND hWnd)
 	m_hWnd = hWnd;
 
 	CreateKey("LookUp", 'W');
-	CreateKey("MoveDown", 'S');
+	CreateKey("Down", 'S');
 	CreateKey("MoveLeft", 'A');
 	CreateKey("MoveRight", 'D');
 	CreateKey("Fire", 'J');

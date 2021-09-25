@@ -33,7 +33,7 @@ bool CEffectHit::Init()
 	SetPivot(0.5f, 0.5f);
 
 	CreateAnimation();
-	AddAnimation("NormalAttackEffect", false, 0.4f);
+	AddAnimation("NormalAttackEffect", false, 0.3f);
 
 	return true;
 }

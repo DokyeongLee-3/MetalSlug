@@ -22,6 +22,7 @@ bool CMainScene::Init()
 {
 	LoadAnimationSequence();
 	LoadBackground();
+	LoadSound();
 
 	GetCamera()->SetWorldResolution(STAGE_WIDTH, STAGE_HEIGHT);
 
@@ -547,6 +548,88 @@ void CMainScene::LoadAnimationSequence()
 	}
 
 	fclose(FileStream);
+
+	// Jump하면서 아래로 조준하는 (공격X) 애니메이션
+
+	GetSceneResource()->CreateAnimationSequence("PlayerJumpDownRightTop",
+		"PlayerJumpDownRightTop", TEXT("Player/Right/Jump/Marco_JumpDownTop.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerJumpDownRightTop",
+		255, 255, 255);
+	
+	AnimationFrameData Data = {};
+	Data.StartPos.x = 0.f;
+	Data.StartPos.y = 0.f;
+	Data.Size.x = 60.f;
+	Data.Size.y = 105.f;
+	Data.Offset.x = 0.f;
+	Data.Offset.y = 50.f;
+
+	GetSceneResource()->AddAnimationFrameData("PlayerJumpDownRightTop", Data);
+
+
+	GetSceneResource()->CreateAnimationSequence("PlayerJumpDownLeftTop",
+		"PlayerJumpDownLeftTop", TEXT("Player/Left/Jump/Marco_JumpDownTop.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerJumpDownLeftTop",
+		255, 255, 255);
+
+	GetSceneResource()->AddAnimationFrameData("PlayerJumpDownLeftTop", Data);
+
+
+	// Jump하면서 아래로 총알 발사하는 애니메이션
+
+	GetSceneResource()->CreateAnimationSequence("PlayerJumpAttackDownRightTop",
+		"PlayerJumpAttackDownRightTop", TEXT("Player/Right/Jump/Marco_JumpAttackDownTop.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerJumpAttackDownRightTop",
+		255, 255, 255);
+
+	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
+	fopen_s(&FileStream, "PlayerJumpAttackDownRightTop.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 7; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerJumpAttackDownRightTop", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+	GetSceneResource()->CreateAnimationSequence("PlayerJumpAttackDownLeftTop",
+		"PlayerJumpAttackDownLeftTop", TEXT("Player/Left/Jump/Marco_JumpAttackDownTop.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerJumpAttackDownLeftTop",
+		255, 255, 255);
+
+	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
+	fopen_s(&FileStream, "PlayerJumpAttackDownLeftTop.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 7; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerJumpAttackDownLeftTop", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
 }
 
 void CMainScene::LoadBackground()
@@ -597,4 +680,11 @@ void CMainScene::LoadBackground()
 		TEXT("Background/Background1_transparent.bmp"));
 	Desert->SetTextureColorKey(255, 255, 255);
 
+}
+
+void CMainScene::LoadSound()
+{
+	GetSceneResource()->LoadSound("Effect", false, "NormalAttack",
+		"NormalAttackSound.wav");
+	GetSceneResource()->SetVolume("Effect", 60);
 }

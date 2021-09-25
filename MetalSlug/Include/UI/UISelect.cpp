@@ -27,7 +27,7 @@ bool CUISelect::Init()
 	SelectBackground->AddAnimation("SelectSceneDarkness", false,
 		1.2f);
 	SelectBackground->AddAnimation("SelectSceneScreenUpAnimation", false,
-		0.8f);
+		0.6f);
 
 	SelectBackground->AddAnimation("PauseAnimation", true,
 		10000000.f);

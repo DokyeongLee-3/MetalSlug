@@ -7,6 +7,7 @@
 #include "../Collision/ColliderSphere.h"
 #include "../Scene/SceneCollision.h"
 #include "../Scene/Camera.h"
+#include "../Scene/SceneResource.h"
 
 CPlayer::CPlayer() :
 	m_TopAnimation(nullptr),
@@ -33,10 +34,10 @@ void CPlayer::Start()
 	// 용도이고, 애니메이션 시퀀스 내에서 총알나가고,
 	// 원래 Idle로 돌아오고 이런 것들은 Notify로 설정해놓음
 	CInput::GetInst()->SetCallback<CPlayer>("Jump",
-		KeyState_Push, this, &CPlayer::Jump);
+		KeyState_Down, this, &CPlayer::Jump);
 
-	CInput::GetInst()->SetCallback<CPlayer>("MoveDown",
-		KeyState_Push, this, &CPlayer::MoveDown);
+	CInput::GetInst()->SetCallback<CPlayer>("Down",
+		KeyState_Push, this, &CPlayer::Down);
 
 	CInput::GetInst()->SetCallback<CPlayer>("MoveLeft",
 		KeyState_Push, this, &CPlayer::MoveLeft);
@@ -91,6 +92,23 @@ bool CPlayer::Init()
 	AddTopAnimation("PlayerVerticalJumpLeftTop", false, 1.f, 1.f, true);
 	AddBottomAnimation("PlayerVerticalJumpLeftBottom", false, 1.f, 1.f, true);
 
+	AddTopAnimation("PlayerJumpDownRightTop", false, 0.8f, 1.f, true);
+	AddTopAnimation("PlayerJumpDownLeftTop", false, 0.8f, 1.f, true);
+
+	AddTopAnimation("PlayerJumpAttackDownRightTop", false, 0.2f);
+	AddTopAnimation("PlayerJumpAttackDownLeftTop", false, 0.2f, 1.f, true);
+
+	AddTopAnimationNotify<CPlayer>("PlayerJumpAttackDownRightTop",
+		1, this, &CPlayer::CloneBullet);
+	AddTopAnimationNotify<CPlayer>("PlayerJumpAttackDownLeftTop",
+		5, this, &CPlayer::CloneBullet);
+
+	SetTopAnimationEndNotify<CPlayer>("PlayerJumpAttackDownRightTop",
+		this, &CPlayer::TopAttackEnd);
+	SetTopAnimationEndNotify<CPlayer>("PlayerJumpAttackDownLeftTop",
+		this, &CPlayer::TopAttackEnd);
+
+
 	//AddAnimationNotify<CPlayer>("LucidNunNaRightAttack",
 	//	2, this, &CPlayer::Fire);
 	SetTopAnimationEndNotify<CPlayer>("PlayerNormalFireRightTop",
@@ -125,6 +143,8 @@ bool CPlayer::Init()
 
 void CPlayer::Update(float DeltaTime)
 {
+	m_IsGround = false;
+
 	if (!m_Start)
 	{
 		Start();
@@ -264,9 +284,9 @@ void CPlayer::PrevRender()
 
 void CPlayer::Render(HDC hDC)
 {
-	if (m_TopAnimation)
+	if (m_BottomAnimation)
 	{
-		AnimationInfo* AnimInfo = m_TopAnimation->m_CurrentAnimation;
+		AnimationInfo* AnimInfo = m_BottomAnimation->m_CurrentAnimation;
 
 		// CAnimation::Update에서 m_CurrentAnimation의 Frame 번호를
 		// 시간이 지남에 따라 계속 update해주므로, GetFrameData인자에는
@@ -276,8 +296,7 @@ void CPlayer::Render(HDC hDC)
 		const AnimationFrameData& FrameData =
 			AnimInfo->Sequence->GetFrameData(AnimInfo->Frame);
 
-		Vector2 LT = m_RenderPos - m_Pivot * FrameData.Size + FrameData.Offset + m_Offset;
-		LT.y -= PLAYER_BOTTOMHEIGHT;
+		Vector2 LT = m_RenderPos - m_Pivot * FrameData.Size + m_Offset;
 
 		if (AnimInfo->Sequence->GetTextureType() == ETexture_Type::Atlas)
 		{
@@ -310,9 +329,9 @@ void CPlayer::Render(HDC hDC)
 		}
 	}
 
-	if (m_BottomAnimation)
+	if (m_TopAnimation)
 	{
-		AnimationInfo* AnimInfo = m_BottomAnimation->m_CurrentAnimation;
+		AnimationInfo* AnimInfo = m_TopAnimation->m_CurrentAnimation;
 
 		// CAnimation::Update에서 m_CurrentAnimation의 Frame 번호를
 		// 시간이 지남에 따라 계속 update해주므로, GetFrameData인자에는
@@ -322,7 +341,8 @@ void CPlayer::Render(HDC hDC)
 		const AnimationFrameData& FrameData =
 			AnimInfo->Sequence->GetFrameData(AnimInfo->Frame);
 
-		Vector2 LT = m_RenderPos - m_Pivot * FrameData.Size + m_Offset;
+		Vector2 LT = m_RenderPos - m_Pivot * FrameData.Size + FrameData.Offset + m_Offset;
+		LT.y -= PLAYER_BOTTOMHEIGHT;
 
 		if (AnimInfo->Sequence->GetTextureType() == ETexture_Type::Atlas)
 		{
@@ -417,59 +437,94 @@ void CPlayer::Jump(float DeltaTime)
 	}
 }
 
-void CPlayer::MoveDown(float DeltaTime)
+void CPlayer::Down(float DeltaTime)
 {
-	//m_Pos.y += 200.f * DeltaTime;
 	Move(Vector2(0.f, 1.f));
 	//ChangeAnimation("LucidNunNaRightWalk");
+	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+
+	if (!m_IsGround)
+	{
+		if (CurTop.find("PlayerJumpAttackDown") == std::string::npos)
+		{
+			if (CurTop.find("Right") != std::string::npos)
+			{
+				ChangeTopAnimation("PlayerJumpDownRightTop");
+			}
+
+			else if (CurTop.find("Left") != std::string::npos)
+			{
+				ChangeTopAnimation("PlayerJumpDownLeftTop");
+			}
+		}
+
+	}
 }
 
 void CPlayer::MoveLeft(float DeltaTime)
 {
 	Move(Vector2(-1.f, 0.f));
-	if (m_TopAnimation->m_CurrentAnimation->Sequence->GetName() != "PlayerNormalFireLeftTop")
+	// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
+	if (!m_Jump)
 	{
-		ChangeTopAnimation("PlayerRunLeftTop");
-	}
+		if (m_TopAnimation->m_CurrentAnimation->Sequence->GetName() != "PlayerNormalFireLeftTop")
+		{
+			ChangeTopAnimation("PlayerRunLeftTop");
+		}
 
-	ChangeBottomAnimation("PlayerRunLeftBottom");
+		ChangeBottomAnimation("PlayerRunLeftBottom");
+	}
 }
 
 void CPlayer::MoveRight(float DeltaTime)
 {
 	Move(Vector2(1.f, 0.f));
-	if (m_TopAnimation->m_CurrentAnimation->Sequence->GetName() != "PlayerNormalFireRightTop")
-	{
-		ChangeTopAnimation("PlayerRunRightTop");
-	}
 
-	ChangeBottomAnimation("PlayerRunRightBottom");
+	// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
+	if (!m_Jump)
+	{
+		if (m_TopAnimation->m_CurrentAnimation->Sequence->GetName() != "PlayerNormalFireRightTop")
+		{
+			ChangeTopAnimation("PlayerRunRightTop");
+		}
+
+		ChangeBottomAnimation("PlayerRunRightBottom");
+	}
 }
 
 void CPlayer::BulletFire(float DeltaTime)
 {
-	 if (m_TopAnimation->m_CurrentAnimation->Sequence->GetName() == "PlayerIdleRightTop" &&
-		m_BottomAnimation->m_CurrentAnimation->Sequence->GetName() == "PlayerIdleRightBottom")
+	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+	std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
+
+	if (!m_IsGround && CurTop == "PlayerJumpDownRightTop")
+	{
+		m_TopAnimation->ChangeAnimation("PlayerJumpAttackDownRightTop");
+	}
+
+	else if (!m_IsGround && CurTop == "PlayerJumpDownLeftTop")
+	{
+		m_TopAnimation->ChangeAnimation("PlayerJumpAttackDownLeftTop");
+	}
+
+	else if (CurTop == "PlayerIdleRightTop" && CurBottom == "PlayerIdleRightBottom")
 	{
 		m_TopAnimation->ChangeAnimation("PlayerNormalFireRightTop");
 		m_BottomAnimation->ChangeAnimation("PlayerNormalFireRightBottom");
 	}
 
-	else if (m_TopAnimation->m_CurrentAnimation->Sequence->GetName() == "PlayerIdleLeftTop" &&
-		m_BottomAnimation->m_CurrentAnimation->Sequence->GetName() == "PlayerIdleLeftBottom")
+	else if (CurTop == "PlayerIdleLeftTop" && CurBottom == "PlayerIdleLeftBottom")
 	{
 		m_TopAnimation->ChangeAnimation("PlayerNormalFireLeftTop");
 		m_BottomAnimation->ChangeAnimation("PlayerNormalFireLeftBottom");
 	}
 
-	else if (m_TopAnimation->m_CurrentAnimation->Sequence->GetName() == "PlayerRunRightTop" &&
-		m_BottomAnimation->m_CurrentAnimation->Sequence->GetName() == "PlayerRunRightBottom")
+	else if (CurTop == "PlayerRunRightTop" && CurBottom == "PlayerRunRightBottom")
 	 {
 		 m_TopAnimation->ChangeAnimation("PlayerNormalFireRightTop");
 	 }
 
-	else if (m_TopAnimation->m_CurrentAnimation->Sequence->GetName() == "PlayerRunLeftTop" &&
-		m_BottomAnimation->m_CurrentAnimation->Sequence->GetName() == "PlayerRunLeftBottom")
+	else if (CurTop == "PlayerRunLeftTop" && CurBottom == "PlayerRunLeftBottom")
 	 {
 		 m_TopAnimation->ChangeAnimation("PlayerNormalFireLeftTop");
 	 }
@@ -488,17 +543,22 @@ void CPlayer::Resume(float DeltaTime)
 void CPlayer::CloneBullet()
 {
 	// MainScene::Init에서 만들어놓았던 Prototype을 찾아서
-// 그 Prototype의 정보를 복사해서 실제로 Scene의 
-// m_ObjList에 넣어줘서 Scene에 배치한다
+	// 그 Prototype의 정보를 복사해서 실제로 Scene의 
+	// m_ObjList에 넣어줘서 Scene에 배치한다
 	CSharedPtr<CBullet> Bullet = m_Scene->CreateObject<CBullet>(
 		"Bullet", "PlayerBullet",
 		Vector2(0.f, 0.f), Vector2(20.f, 20.f));
 
-	Vector2 FireSpot = {};
-
 	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 
-	if (CurTop.find("Right") != std::string::npos)
+	if (CurTop.find("Down") != std::string::npos)
+	{
+		Bullet->SetPos(m_Pos + Vector2(5.f,
+			PLAYER_BOTTOMHEIGHT  + 10.f));
+		Bullet->SetDir(0.f, 1.f);
+	}
+
+	else if (CurTop.find("Right") != std::string::npos)
 	{
 		Bullet->SetPos(m_Pos + Vector2(PLAYER_TOPWIDTH / 2.f + 10.f,
 			-(PLAYER_BOTTOMHEIGHT + PLAYER_TOPHEIGHT / 2.f) + 10.f));
@@ -512,7 +572,10 @@ void CPlayer::CloneBullet()
 		Bullet->SetDir(-1.f, 0.f);
 	}
 
+
 	Bullet->SetTextureColorKey(255, 255, 255);
+
+	m_Scene->GetSceneResource()->SoundPlay("NormalAttack");
 }
 
 void CPlayer::CreateTopAnimation()
@@ -671,13 +734,27 @@ void CPlayer::SetBottomAnimationLoop(const std::string& Name, bool Loop)
 
 void CPlayer::TopAttackEnd()
 {
-	if(m_TopAnimation->m_CurrentAnimation->Sequence->GetName() 
-		== "PlayerNormalFireRightTop")
-	m_TopAnimation->ChangeAnimation("PlayerIdleRightTop");
+	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 
-	else if (m_TopAnimation->m_CurrentAnimation->Sequence->GetName()
-		== "PlayerNormalFireLeftTop")
+	if (CurTop == "PlayerJumpAttackDownRightTop")
+	{
+		m_TopAnimation->ChangeAnimation("PlayerJumpDownRightTop");
+	}
+
+	else if (CurTop == "PlayerJumpAttackDownLeftTop")
+	{
+		m_TopAnimation->ChangeAnimation("PlayerJumpDownLeftTop");
+	}
+
+	else if (CurTop == "PlayerNormalFireRightTop")
+	{
+		m_TopAnimation->ChangeAnimation("PlayerIdleRightTop");
+	}
+
+	else if (CurTop == "PlayerNormalFireLeftTop")
+	{
 		m_TopAnimation->ChangeAnimation("PlayerIdleLeftTop");
+	}
 }
 
 void CPlayer::BottomAttackEnd()
@@ -702,8 +779,10 @@ void CPlayer::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 		// 바닥, 카메라 충돌체에 모두 충돌했을 경우
 		if (FloorCollision && CamCollision)
 		{
-			m_PhysicsSimulate = false;
+			// m_PhysicsSimulate = false;
 			m_IsGround = true;
+
+			m_Jump = false;
 			// 카메라 충돌체와 닿았다면 바닥과도 닿아있을 것이므로
 			// 바닥과의 Hit Point를 찾아서 CollisionRectToPixel에서 
 			// 갱신해놓았을 것이다. 따라서 여기서 그 바닥과의 Hit Point로
@@ -720,6 +799,9 @@ void CPlayer::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 		// 바닥 충돌체에만 충돌한 경우
 		else if (FloorCollision)
 		{
+			m_IsGround = true;
+			m_Jump = false;
+
 			m_FallTime = 0.f;
 
 			m_Pos.y = Src->GetHitPoint().y;
@@ -760,8 +842,10 @@ void CPlayer::CollisionStay(CCollider* Src, CCollider* Dest, float DeltaTime)
 		// 바닥, 카메라 충돌체에 모두 충돌했을 경우
 		if (FloorCollision && CamCollision)
 		{
-			m_PhysicsSimulate = false;
 			m_IsGround = true;
+			m_Jump = false;
+
+			m_FallTime = 0.f;
 			// 카메라 충돌체와 닿았다면 바닥과도 닿아있을 것이므로
 			// 바닥과의 Hit Point를 찾아서 CollisionRectToPixel에서 
 			// 갱신해놓았을 것이다. 따라서 여기서 그 바닥과의 Hit Point로
@@ -778,6 +862,9 @@ void CPlayer::CollisionStay(CCollider* Src, CCollider* Dest, float DeltaTime)
 		// 바닥 충돌체에만 충돌한 경우
 		else if (FloorCollision)
 		{
+			m_IsGround = true;
+			m_Jump = false;
+
 			m_FallTime = 0.f;
 
 			m_Pos.y = Src->GetHitPoint().y;
