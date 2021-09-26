@@ -11,7 +11,9 @@
 
 CPlayer::CPlayer() :
 	m_TopAnimation(nullptr),
-	m_BottomAnimation(nullptr)
+	m_BottomAnimation(nullptr),
+	m_SitDown(false),
+	m_TouchGroundTime(0.f)
 {
 }
 
@@ -64,6 +66,7 @@ bool CPlayer::Init()
 	if (!CCharacter::Init())
 		return false;
 
+	m_GravityAccel = 15.f;
 	m_MoveSpeed = 400.f;
 	// 피봇을 밭밑으로 보통 잡는다
 	SetPivot(0.5f, 1.f);
@@ -137,15 +140,25 @@ bool CPlayer::Init()
 	SetBottomAnimationEndNotify<CPlayer>("PlayerNormalFireLeftBottom",
 		this, &CPlayer::BottomAttackEnd);
 
+	AddTopAnimation("PlayerFrontJumpRightTop", false, 1.f);
+	AddBottomAnimation("PlayerFrontJumpRightBottom", false, 1.f);
+	AddTopAnimation("PlayerFrontJumpLeftTop", false, 1.f, 1.f, true);
+	AddBottomAnimation("PlayerFrontJumpLeftBottom", false, 1.f, 1.f, true);
+
+	AddTopAnimation("Blank", false, 0.8f);
+	AddBottomAnimation("PlayerSitDownIdleRight", true, 0.8f);
+	AddBottomAnimation("PlayerSitDownIdleLeft", true, 0.8f, 1.f, true);
+
+	AddBottomAnimation("PlayerCrawlRight", true, 0.8f);
+	AddBottomAnimation("PlayerCrawlLeft", true, 0.8f, 1.f, true);
 
 	CColliderSphere* Head = AddCollider<CColliderSphere>("Head");
-	// Head->SetExtent(40.f, 30.f);
-	Head->SetRadius(20.f);
-	Head->SetOffset(0.f, -60.f);
+	Head->SetRadius(25.f);
+	Head->SetOffset(5.f, -75.f);
 	Head->SetCollisionProfile("Player");
 
 	CColliderBox* Body = AddCollider<CColliderBox>("Body");
-	Body->SetExtent(80.f, 45.f);
+	Body->SetExtent(65.f, 45.f);
 	Body->SetOffset(0.f, -22.5f);
 	Body->SetCollisionProfile("Player");
 	Body->SetCollisionBeginFunction<CPlayer>(this, &CPlayer::CollisionBegin);
@@ -239,7 +252,7 @@ void CPlayer::PostUpdate(float DeltaTime)
 		}
 	}
 
-	if (CurTopAnimation.find("LookUp") != std::string::npos)
+	else if (CurTopAnimation.find("LookUp") != std::string::npos)
 	{
 		if (!(GetAsyncKeyState('W') & 0x8000))
 		{
@@ -256,6 +269,45 @@ void CPlayer::PostUpdate(float DeltaTime)
 			}
 		}
 	}
+
+	else if (CurBottomAnimation.find("SitDown") != std::string::npos)
+	{
+		if (!(GetAsyncKeyState('S') & 0x8000))
+		{
+			if (CurBottomAnimation.find("Right") != std::string::npos)
+			{
+				m_TopAnimation->ChangeAnimation("PlayerIdleRightTop");
+				m_BottomAnimation->ChangeAnimation("PlayerIdleRightBottom");
+			}
+
+			else if(CurBottomAnimation.find("Left") != std::string::npos)
+			{
+				m_TopAnimation->ChangeAnimation("PlayerIdleLeftTop");
+				m_BottomAnimation->ChangeAnimation("PlayerIdleLeftBottom");
+			}
+			m_SitDown = false;
+			m_MoveSpeed = 400.f;
+		}
+	}
+
+	else if (CurBottomAnimation.find("Crawl") != std::string::npos)
+	{
+		if (m_Velocity.Length() == 0.f)
+		{
+			if (CurBottomAnimation.find("Right") != std::string::npos)
+			{
+				m_BottomAnimation->ChangeAnimation("PlayerSitDownIdleRight");
+			}
+
+			else if (CurBottomAnimation.find("Left") != std::string::npos)
+			{
+				m_BottomAnimation->ChangeAnimation("PlayerSitDownIdleLeft");
+			}
+
+			m_SitDown = true;
+		}
+	}
+
 
 	m_Size = Vector2(0.f, 0.f);
 
@@ -333,7 +385,7 @@ void CPlayer::Render(HDC hDC)
 		const AnimationFrameData& FrameData =
 			AnimInfo->Sequence->GetFrameData(AnimInfo->Frame);
 
-		Vector2 LT = m_RenderPos - m_Pivot * FrameData.Size + m_Offset;
+		Vector2 LT = m_RenderPos - m_Pivot * FrameData.Size + FrameData.Offset + m_Offset;
 
 		if (AnimInfo->Sequence->GetTextureType() == ETexture_Type::Atlas)
 		{
@@ -456,6 +508,7 @@ void CPlayer::Jump(float DeltaTime)
 {
 	//m_Pos.y -= 200.f * DeltaTime;
 	CGameObject::Jump();
+	m_TouchGroundTime = 0;
 	m_JumpVelocity = 60.f;
 	Move(Vector2(0.f, -1.f));
 	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
@@ -476,9 +529,10 @@ void CPlayer::Jump(float DeltaTime)
 
 void CPlayer::Down(float DeltaTime)
 {
-	Move(Vector2(0.f, 1.f));
+	//Move(Vector2(0.f, 1.f));
 	//ChangeAnimation("LucidNunNaRightWalk");
 	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+	std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
 
 	if (!m_IsGround)
 	{
@@ -493,8 +547,36 @@ void CPlayer::Down(float DeltaTime)
 			{
 				ChangeTopAnimation("PlayerJumpDownLeftTop");
 			}
+
+			else if (CurBottom == "PlayerSitDownIdleRight")
+			{
+				ChangeTopAnimation("PlayerJumpDownRightTop");
+				ChangeBottomAnimation("PlayerVerticalJumpRightBottom");
+			}
+
+			else if (CurBottom == "PlayerSitDownIdleLeft")
+			{
+				ChangeTopAnimation("PlayerJumpDownLeftTop");
+				ChangeBottomAnimation("PlayerVerticalJumpLeftBottom");
+			}
+
+		}
+	}
+
+	else
+	{
+		ChangeTopAnimation("Blank");
+
+		if (CurTop.find("Right") != std::string::npos)
+		{
+			ChangeBottomAnimation("PlayerSitDownIdleRight");
 		}
 
+		else if (CurTop.find("Left") != std::string::npos)
+		{
+			ChangeBottomAnimation("PlayerSitDownIdleLeft");
+		}
+		m_SitDown = true;
 	}
 }
 
@@ -516,21 +598,44 @@ void CPlayer::LookUp(float DeltaTime)
 		}
 	}
 
-
 }
 
 void CPlayer::MoveLeft(float DeltaTime)
 {
 	Move(Vector2(-1.f, 0.f));
+	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 	// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
 	if (!m_Jump)
 	{
-		if (m_TopAnimation->m_CurrentAnimation->Sequence->GetName() != "PlayerNormalFireLeftTop")
+		// 앉아있는 중에 왼쪽 이동키가 들어오면 왼쪽으로 기어가기
+		if (m_SitDown)
 		{
-			ChangeTopAnimation("PlayerRunLeftTop");
+			ChangeTopAnimation("Blank");
+			ChangeBottomAnimation("PlayerCrawlLeft");
+			m_MoveSpeed = 150.f;
 		}
 
-		ChangeBottomAnimation("PlayerRunLeftBottom");
+		else
+		{
+			if (CurTop != "PlayerNormalFireLeftTop")
+			{
+				ChangeTopAnimation("PlayerRunLeftTop");
+			}
+
+			ChangeBottomAnimation("PlayerRunLeftBottom");
+		}
+	}
+
+	// 점프중이라면 FrontJump 애니메이션으로 전환
+	else
+	{
+		// 만약 FrontJumpRight중인데 왼쪽이동키가 들어오면
+		// 애니메이션 FrontJumpLeft로 전환하지 않는다
+		if (CurTop.find("FrontJumpRight") == std::string::npos)
+		{
+			ChangeTopAnimation("PlayerFrontJumpLeftTop");
+			ChangeBottomAnimation("PlayerFrontJumpLeftBottom");
+		}
 	}
 }
 
@@ -538,15 +643,39 @@ void CPlayer::MoveRight(float DeltaTime)
 {
 	Move(Vector2(1.f, 0.f));
 
+	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 	// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
 	if (!m_Jump)
 	{
-		if (m_TopAnimation->m_CurrentAnimation->Sequence->GetName() != "PlayerNormalFireRightTop")
+		// 앉아있는 중에 오른쪽 이동키가 들어오면 오른쪽으로 기어가기
+		if (m_SitDown)
 		{
-			ChangeTopAnimation("PlayerRunRightTop");
+			ChangeTopAnimation("Blank");
+			ChangeBottomAnimation("PlayerCrawlRight");
+			m_MoveSpeed = 150.f;
 		}
 
-		ChangeBottomAnimation("PlayerRunRightBottom");
+		else
+		{
+
+			if (CurTop != "PlayerNormalFireRightTop")
+			{
+				ChangeTopAnimation("PlayerRunRightTop");
+			}
+
+			ChangeBottomAnimation("PlayerRunRightBottom");
+		}
+	}
+
+	else
+	{
+		// FrontJumpLeft중인데 오른쪽 방향키가 들어오면
+		// FrontJumpRight로 전환하지 않는다
+		if (CurTop.find("FrontJumpLeft") == std::string::npos)
+		{
+			ChangeTopAnimation("PlayerFrontJumpRightTop");
+			ChangeBottomAnimation("PlayerFrontJumpRightBottom");
+		}
 	}
 }
 
@@ -898,14 +1027,16 @@ void CPlayer::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 
 			if (CurTop.find("Run") == std::string::npos &&
 				CurTop.find("Fire") == std::string::npos &&
+				CurBottom.find("Crawl") == std::string::npos &&
 				CurTop.find("Right") != std::string::npos)
 			{
 				ChangeTopAnimation("PlayerIdleRightTop");
 				ChangeBottomAnimation("PlayerIdleRightBottom");
 			}
 
-			if (CurBottom.find("Run") == std::string::npos &&
+			else if (CurBottom.find("Run") == std::string::npos &&
 				CurBottom.find("Fire") == std::string::npos &&
+				CurBottom.find("Crawl") == std::string::npos &&
 				CurBottom.find("Left") != std::string::npos)
 			{
 				ChangeTopAnimation("PlayerIdleLeftTop");
@@ -954,6 +1085,7 @@ void CPlayer::CollisionStay(CCollider* Src, CCollider* Dest, float DeltaTime)
 			m_Pos.y = Src->GetHitPoint().y;
 			m_FallStartY = m_Pos.y;
 			m_JumpVelocity = 0.f;
+			m_TouchGroundTime += DeltaTime;
 		}
 	}
 }

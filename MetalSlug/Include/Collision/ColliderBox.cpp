@@ -70,15 +70,15 @@ void CColliderBox::Render(HDC hDC)
 	RectInfo RenderInfo = m_Info;
 
 
-	//RenderInfo.Left -= Camera->GetPos().x;
-	//RenderInfo.Right -= Camera->GetPos().x;
-	//RenderInfo.Top -= Camera->GetPos().y;
-	//RenderInfo.Bottom -= Camera->GetPos().y;
+	RenderInfo.Left -= Camera->GetPos().x;
+	RenderInfo.Right -= Camera->GetPos().x;
+	RenderInfo.Top -= Camera->GetPos().y;
+	RenderInfo.Bottom -= Camera->GetPos().y;
 
-	//RECT	rc = { (long)RenderInfo.Left, (long)RenderInfo.Top,
-	//	(long)RenderInfo.Right, (long)RenderInfo.Bottom };
+	RECT	rc = { (long)RenderInfo.Left, (long)RenderInfo.Top,
+		(long)RenderInfo.Right, (long)RenderInfo.Bottom };
 
-	//FrameRect(hDC, &rc, Brush);
+	FrameRect(hDC, &rc, Brush);
 #endif // _DEBUG
 
 }

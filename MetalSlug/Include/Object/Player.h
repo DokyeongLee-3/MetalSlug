@@ -23,6 +23,19 @@ public:
 protected:
     CAnimation* m_TopAnimation;
     CAnimation* m_BottomAnimation;
+    bool m_SitDown;
+    float m_TouchGroundTime;
+
+public:
+    float GetTouchGroundTime()  const
+    {
+        return m_TouchGroundTime;
+    }
+
+    void SetTouchGroundTime(float Time)
+    {
+        m_TouchGroundTime = Time;
+    }
 
 public:
     virtual void Start();

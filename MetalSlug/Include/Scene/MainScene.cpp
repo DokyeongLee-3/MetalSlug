@@ -739,6 +739,225 @@ void CMainScene::LoadAnimationSequence()
 	}
 
 	fclose(FileStream);
+
+
+	// PlayerFrontJump
+
+	GetSceneResource()->CreateAnimationSequence("PlayerFrontJumpRightTop",
+		"PlayerFrontJumpRightTop", TEXT("Player/Right/Jump/Marco_FrontJumpTop.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerFrontJumpRightTop",
+		255, 255, 255);
+
+	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
+	fopen_s(&FileStream, "PlayerFrontJumpRightTop.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 6; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerFrontJumpRightTop", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+	GetSceneResource()->CreateAnimationSequence("PlayerFrontJumpRightBottom",
+		"PlayerFrontJumpRightBottom", TEXT("Player/Right/Jump/Marco_FrontJumpBottom.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerFrontJumpRightBottom",
+		255, 255, 255);
+
+	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
+	fopen_s(&FileStream, "PlayerFrontJumpRightBottom.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 6; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerFrontJumpRightBottom", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+	GetSceneResource()->CreateAnimationSequence("PlayerFrontJumpLeftTop",
+		"PlayerFrontJumpLeftTop", TEXT("Player/Left/Jump/Marco_FrontJumpTop.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerFrontJumpLeftTop",
+		255, 255, 255);
+
+	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
+	fopen_s(&FileStream, "PlayerFrontJumpLeftTop.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 6; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerFrontJumpLeftTop", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+	GetSceneResource()->CreateAnimationSequence("PlayerFrontJumpLeftBottom",
+		"PlayerFrontJumpLeftBottom", TEXT("Player/Left/Jump/Marco_FrontJumpBottom.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerFrontJumpLeftBottom",
+		255, 255, 255);
+
+	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
+	fopen_s(&FileStream, "PlayerFrontJumpLeftBottom.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 6; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerFrontJumpLeftBottom", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+	GetSceneResource()->CreateAnimationSequence("PlayerSitDownIdleRight",
+		"PlayerSitDownIdleRight", TEXT("Player/Right/SitDown/SitDownIdleRight.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerSitDownIdleRight",
+		255, 255, 255);
+
+	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
+	fopen_s(&FileStream, "PlayerSitDownIdleRight.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerSitDownIdleRight", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+	GetSceneResource()->CreateAnimationSequence("PlayerSitDownIdleLeft",
+		"PlayerSitDownIdleLeft", TEXT("Player/Left/SitDown/SitDownIdleLeft.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerSitDownIdleLeft",
+		255, 255, 255);
+
+	fopen_s(&FileStream, "PlayerSitDownIdleLeft.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerSitDownIdleLeft", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+	GetSceneResource()->CreateAnimationSequence("Blank",
+		"Blank", TEXT("Player/Blank.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("Blank",
+		255, 255, 255);
+
+	GetSceneResource()->AddAnimationFrameData("Blank",
+		0.f, 0.f, 100.f, 68.f);
+
+	// Crawl
+
+	GetSceneResource()->CreateAnimationSequence("PlayerCrawlRight",
+		"PlayerCrawlRight", TEXT("Player/Right/SitDown/CrawlRight.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerCrawlRight",
+		255, 255, 255);
+
+	fopen_s(&FileStream, "PlayerCrawlRight.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 7; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerCrawlRight", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+	GetSceneResource()->CreateAnimationSequence("PlayerCrawlLeft",
+		"PlayerCrawlLeft", TEXT("Player/Left/SitDown/CrawlLeft.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerCrawlLeft",
+		255, 255, 255);
+
+	fopen_s(&FileStream, "PlayerCrawlLeft.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 7; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerCrawlLeft", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
 }
 
 void CMainScene::LoadBackground()

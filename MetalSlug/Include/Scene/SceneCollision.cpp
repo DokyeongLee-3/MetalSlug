@@ -1,4 +1,5 @@
 
+#include "../Object/Player.h"
 #include "SceneCollision.h"
 #include "../Collision/Collider.h"
 #include "../UI/UIWidget.h"
@@ -109,6 +110,13 @@ void CSceneCollision::Collision(float DeltaTime)
 
 					Src->CallCollisionEnd(Dest, DeltaTime);
 					Dest->CallCollisionEnd(Src, DeltaTime);
+
+					if (Src->GetOwner()->GetName() == "Player" &&
+						Dest->GetOwner()->GetName() == "Stage")
+					{
+						CPlayer* Player = (CPlayer*)(Src->GetOwner());
+						Player->SetTouchGroundTime(0.f);
+					}
 				}
 			}
 		}
