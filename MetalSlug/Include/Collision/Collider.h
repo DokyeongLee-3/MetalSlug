@@ -103,6 +103,11 @@ public:
 		return m_Profile;
 	}
 
+	Vector2 GetOffset()	const
+	{
+		return m_Offset;
+	}
+
 public:
 	void SetCollisionProfile(const std::string& Name);
 	// SceneCollision에서 처음 충돌할 때 각자의

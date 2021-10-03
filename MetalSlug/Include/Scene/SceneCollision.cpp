@@ -110,13 +110,6 @@ void CSceneCollision::Collision(float DeltaTime)
 
 					Src->CallCollisionEnd(Dest, DeltaTime);
 					Dest->CallCollisionEnd(Src, DeltaTime);
-
-					if (Src->GetOwner()->GetName() == "Player" &&
-						Dest->GetOwner()->GetName() == "Stage")
-					{
-						CPlayer* Player = (CPlayer*)(Src->GetOwner());
-						Player->SetTouchGroundTime(0.f);
-					}
 				}
 			}
 		}

@@ -54,42 +54,44 @@ void CColliderSphere::Render(HDC hDC)
 	CCollider::Render(hDC);
 
 #ifdef _DEBUG
-	HPEN Pen = CGameManager::GetInst()->GetGreenPen();
-
-	if (!m_CollisionList.empty() || m_MouseCollision)
-		Pen = CGameManager::GetInst()->GetRedPen();
-
-	CCamera* Camera = m_Scene->GetCamera();
-
-	SphereInfo	RenderInfo = m_Info;
-
-	RenderInfo.Center -= Camera->GetPos();
-
-	// 현재 object를 일단 Prev에 담아두고 다 그리면
-	// SelectObject로원래 object로 돌려준다.
-	HGDIOBJ Prev = SelectObject(hDC, Pen);
-	
-	// FrameRect같은 안이 비어 있는 원을 그릴 수 있는
-	// API가 제공되지 않으므로
-	// Sphere충돌체를 LineTo로 최대한 원처럼 그려준다
-
-	// 원의 시작점은 3시 방향
-	MoveToEx(hDC, (int)(RenderInfo.Center.x + RenderInfo.Radius),
-		(int)(RenderInfo.Center.y), nullptr);
-
-	// 30도 마다 하나의 선을 그어줌
-	for (int i = 0; i < 12; ++i)
+	if (m_Enable)
 	{
-		float Radian = DegreeToRadian((i + 1) * (360.f / 12.f));
-		
-		float x = RenderInfo.Center.x + cosf(Radian) * RenderInfo.Radius;
-		float y = RenderInfo.Center.y + sinf(Radian) * RenderInfo.Radius;
+		HPEN Pen = CGameManager::GetInst()->GetGreenPen();
 
-		LineTo(hDC, (int)x, (int)y);
+		if (!m_CollisionList.empty())
+			Pen = CGameManager::GetInst()->GetRedPen();
+
+		CCamera* Camera = m_Scene->GetCamera();
+
+		SphereInfo	RenderInfo = m_Info;
+
+		RenderInfo.Center -= Camera->GetPos();
+
+		// 현재 object를 일단 Prev에 담아두고 다 그리면
+		// SelectObject로원래 object로 돌려준다.
+		HGDIOBJ Prev = SelectObject(hDC, Pen);
+
+		// FrameRect같은 안이 비어 있는 원을 그릴 수 있는
+		// API가 제공되지 않으므로
+		// Sphere충돌체를 LineTo로 최대한 원처럼 그려준다
+
+		// 원의 시작점은 3시 방향
+		MoveToEx(hDC, (int)(RenderInfo.Center.x + RenderInfo.Radius),
+			(int)(RenderInfo.Center.y), nullptr);
+
+		// 30도 마다 하나의 선을 그어줌
+		for (int i = 0; i < 12; ++i)
+		{
+			float Radian = DegreeToRadian((i + 1) * (360.f / 12.f));
+
+			float x = RenderInfo.Center.x + cosf(Radian) * RenderInfo.Radius;
+			float y = RenderInfo.Center.y + sinf(Radian) * RenderInfo.Radius;
+
+			LineTo(hDC, (int)x, (int)y);
+		}
+
+		SelectObject(hDC, Prev);
 	}
-
-	SelectObject(hDC, Prev);
-
 #endif // _DEBUG
 
 }

@@ -12,8 +12,7 @@
 CPlayer::CPlayer() :
 	m_TopAnimation(nullptr),
 	m_BottomAnimation(nullptr),
-	m_SitDown(false),
-	m_TouchGroundTime(0.f)
+	m_SitDown(false)
 {
 }
 
@@ -53,6 +52,9 @@ void CPlayer::Start()
 	CInput::GetInst()->SetCallback<CPlayer>("Fire",
 		KeyState_Down, this, &CPlayer::BulletFire);
 
+	CInput::GetInst()->SetCallback<CPlayer>("Bomb",
+		KeyState_Down, this, &CPlayer::Bomb);
+
 	CInput::GetInst()->SetCallback<CPlayer>("Pause",
 		KeyState_Down, this, &CPlayer::Pause);
 
@@ -66,7 +68,7 @@ bool CPlayer::Init()
 	if (!CCharacter::Init())
 		return false;
 
-	m_GravityAccel = 15.f;
+	m_GravityAccel = 13.f;
 	m_MoveSpeed = 400.f;
 	// 피봇을 밭밑으로 보통 잡는다
 	SetPivot(0.5f, 1.f);
@@ -78,10 +80,10 @@ bool CPlayer::Init()
 	AddTopAnimation("PlayerIdleLeftTop", true, 0.8f, 1.f, true);
 	AddBottomAnimation("PlayerIdleLeftBottom", true, 0.8f, 1.f, true);
 
-	AddTopAnimation("PlayerNormalFireRightTop", false, 0.2f);
-	AddBottomAnimation("PlayerNormalFireRightBottom", false, 0.2f);
-	AddTopAnimation("PlayerNormalFireLeftTop", false, 0.2f, 1.f, true);
-	AddBottomAnimation("PlayerNormalFireLeftBottom", false, 0.2f, 1.f, true);
+	AddTopAnimation("PlayerNormalFireRightTop", false, 0.15f);
+	AddBottomAnimation("PlayerNormalFireRightBottom", false, 0.15f);
+	AddTopAnimation("PlayerNormalFireLeftTop", false, 0.15f, 1.f, true);
+	AddBottomAnimation("PlayerNormalFireLeftBottom", false, 0.15f, 1.f, true);
 	AddTopAnimationNotify<CPlayer>("PlayerNormalFireRightTop",
 		1, this, &CPlayer::CloneBullet);
 	AddTopAnimationNotify<CPlayer>("PlayerNormalFireLeftTop",
@@ -101,8 +103,8 @@ bool CPlayer::Init()
 	AddTopAnimation("PlayerJumpDownRightTop", false, 0.8f, 1.f, true);
 	AddTopAnimation("PlayerJumpDownLeftTop", false, 0.8f, 1.f, true);
 
-	AddTopAnimation("PlayerJumpAttackDownRightTop", false, 0.2f);
-	AddTopAnimation("PlayerJumpAttackDownLeftTop", false, 0.2f, 1.f, true);
+	AddTopAnimation("PlayerJumpAttackDownRightTop", false, 0.15f);
+	AddTopAnimation("PlayerJumpAttackDownLeftTop", false, 0.15f, 1.f, true);
 
 	AddTopAnimationNotify<CPlayer>("PlayerJumpAttackDownRightTop",
 		1, this, &CPlayer::CloneBullet);
@@ -117,8 +119,8 @@ bool CPlayer::Init()
 	AddTopAnimation("PlayerLookUpRightTop", true, 0.8f);
 	AddTopAnimation("PlayerLookUpLeftTop", true, 0.8f, 1.f, true);
 
-	AddTopAnimation("PlayerLookUpAttackRightTop", false, 0.2f);
-	AddTopAnimation("PlayerLookUpAttackLeftTop", false, 0.2f, 1.f, true);
+	AddTopAnimation("PlayerLookUpAttackRightTop", false, 0.15f);
+	AddTopAnimation("PlayerLookUpAttackLeftTop", false, 0.15f, 1.f, true);
 
 	AddTopAnimationNotify<CPlayer>("PlayerLookUpAttackRightTop",
 		1, this, &CPlayer::CloneBullet);
@@ -140,10 +142,10 @@ bool CPlayer::Init()
 	SetBottomAnimationEndNotify<CPlayer>("PlayerNormalFireLeftBottom",
 		this, &CPlayer::BottomAttackEnd);
 
-	AddTopAnimation("PlayerFrontJumpRightTop", false, 1.f);
-	AddBottomAnimation("PlayerFrontJumpRightBottom", false, 1.f);
-	AddTopAnimation("PlayerFrontJumpLeftTop", false, 1.f, 1.f, true);
-	AddBottomAnimation("PlayerFrontJumpLeftBottom", false, 1.f, 1.f, true);
+	AddTopAnimation("PlayerFrontJumpRightTop", false, 0.7f);
+	AddBottomAnimation("PlayerFrontJumpRightBottom", false, 0.7f);
+	AddTopAnimation("PlayerFrontJumpLeftTop", false, 0.7f, 1.f, true);
+	AddBottomAnimation("PlayerFrontJumpLeftBottom", false, 0.7f, 1.f, true);
 
 	AddTopAnimation("Blank", false, 0.8f);
 	AddBottomAnimation("PlayerSitDownIdleRight", true, 0.8f);
@@ -151,6 +153,34 @@ bool CPlayer::Init()
 
 	AddBottomAnimation("PlayerCrawlRight", true, 0.8f);
 	AddBottomAnimation("PlayerCrawlLeft", true, 0.8f, 1.f, true);
+
+	AddBottomAnimation("SitDownNormalAttackRight", false, 0.15f);
+	AddBottomAnimation("SitDownNormalAttackLeft", false, 0.15f, 1.f, true);
+
+	AddBottomAnimationNotify<CPlayer>("SitDownNormalAttackRight",
+		0, this, &CPlayer::CloneBullet);
+	AddBottomAnimationNotify<CPlayer>("SitDownNormalAttackLeft",
+		8, this, &CPlayer::CloneBullet);
+
+	AddTopAnimationNotify<CPlayer>("SitDownNormalAttackRight",
+		0, this, &CPlayer::CloneBullet);
+	AddTopAnimationNotify<CPlayer>("SitDownNormalAttackLeft",
+		9, this, &CPlayer::CloneBullet);
+	SetBottomAnimationEndNotify<CPlayer>("SitDownNormalAttackRight",
+		this, &CPlayer::SitDownBottomAttackEnd);
+	SetBottomAnimationEndNotify<CPlayer>("SitDownNormalAttackLeft",
+		this, &CPlayer::SitDownBottomAttackEnd);
+
+	AddTopAnimation("BombRightTop", false, 0.5f);
+	AddTopAnimation("BombLeftTop", false, 0.5f, 1.f, true);
+	AddTopAnimationNotify<CPlayer>("BombRightTop",
+		2, this, &CPlayer::CloneBomb);
+	AddTopAnimationNotify<CPlayer>("BombLeftTop",
+		2, this, &CPlayer::CloneBomb);
+	SetTopAnimationEndNotify<CPlayer>("BombRightTop",
+		this, &CPlayer::BombEnd);
+	SetTopAnimationEndNotify<CPlayer>("BombLeftTop",
+		this, &CPlayer::BombEnd);
 
 	CColliderSphere* Head = AddCollider<CColliderSphere>("Head");
 	Head->SetRadius(25.f);
@@ -203,7 +233,7 @@ void CPlayer::Update(float DeltaTime)
 
 	auto iter = m_ColliderList.begin();
 	auto iterEnd = m_ColliderList.end();
-
+	
 	for (; iter != iterEnd; )
 	{
 		if (!(*iter)->IsActive())
@@ -240,14 +270,14 @@ void CPlayer::PostUpdate(float DeltaTime)
 		{
 			if (CurBottomAnimation.find("Right") != std::string::npos)
 			{
-				m_TopAnimation->ChangeAnimation("PlayerIdleRightTop");
-				m_BottomAnimation->ChangeAnimation("PlayerIdleRightBottom");
+				ChangeTopAnimation("PlayerIdleRightTop");
+				ChangeBottomAnimation("PlayerIdleRightBottom");
 			}
 
 			else
 			{
-				m_TopAnimation->ChangeAnimation("PlayerIdleLeftTop");
-				m_BottomAnimation->ChangeAnimation("PlayerIdleLeftBottom");
+				ChangeTopAnimation("PlayerIdleLeftTop");
+				ChangeBottomAnimation("PlayerIdleLeftBottom");
 			}
 		}
 	}
@@ -258,14 +288,14 @@ void CPlayer::PostUpdate(float DeltaTime)
 		{
 			if (CurBottomAnimation.find("Right") != std::string::npos)
 			{
-				m_TopAnimation->ChangeAnimation("PlayerIdleRightTop");
-				m_BottomAnimation->ChangeAnimation("PlayerIdleRightBottom");
+				ChangeTopAnimation("PlayerIdleRightTop");
+				ChangeBottomAnimation("PlayerIdleRightBottom");
 			}
 
 			else
 			{
-				m_TopAnimation->ChangeAnimation("PlayerIdleLeftTop");
-				m_BottomAnimation->ChangeAnimation("PlayerIdleLeftBottom");
+				ChangeTopAnimation("PlayerIdleLeftTop");
+				ChangeBottomAnimation("PlayerIdleLeftBottom");
 			}
 		}
 	}
@@ -276,38 +306,62 @@ void CPlayer::PostUpdate(float DeltaTime)
 		{
 			if (CurBottomAnimation.find("Right") != std::string::npos)
 			{
-				m_TopAnimation->ChangeAnimation("PlayerIdleRightTop");
-				m_BottomAnimation->ChangeAnimation("PlayerIdleRightBottom");
+				ChangeTopAnimation("PlayerIdleRightTop");
+				ChangeBottomAnimation("PlayerIdleRightBottom");
 			}
 
 			else if(CurBottomAnimation.find("Left") != std::string::npos)
 			{
-				m_TopAnimation->ChangeAnimation("PlayerIdleLeftTop");
-				m_BottomAnimation->ChangeAnimation("PlayerIdleLeftBottom");
+				ChangeTopAnimation("PlayerIdleLeftTop");
+				ChangeBottomAnimation("PlayerIdleLeftBottom");
 			}
 			m_SitDown = false;
 			m_MoveSpeed = 400.f;
+			CCollider* Head = FindCollider("Head");
+			Head->SetEnable(true);
 		}
 	}
 
 	else if (CurBottomAnimation.find("Crawl") != std::string::npos)
 	{
-		if (m_Velocity.Length() == 0.f)
+		if (!(GetAsyncKeyState('S') & 0x8000))
 		{
 			if (CurBottomAnimation.find("Right") != std::string::npos)
 			{
-				m_BottomAnimation->ChangeAnimation("PlayerSitDownIdleRight");
+				ChangeTopAnimation("PlayerIdleRightTop");
+				ChangeBottomAnimation("PlayerIdleRightBottom");
 			}
 
 			else if (CurBottomAnimation.find("Left") != std::string::npos)
 			{
-				m_BottomAnimation->ChangeAnimation("PlayerSitDownIdleLeft");
+				ChangeTopAnimation("PlayerIdleLeftTop");
+				ChangeBottomAnimation("PlayerIdleLeftBottom");
 			}
-
-			m_SitDown = true;
+			m_SitDown = false;
+			m_MoveSpeed = 400.f;
+			CCollider* Head = FindCollider("Head");
+			Head->SetEnable(true);
 		}
-	}
 
+		else
+		{
+			if (m_Velocity.Length() == 0.f)
+			{
+				if (CurBottomAnimation.find("Right") != std::string::npos)
+				{
+					ChangeBottomAnimation("PlayerSitDownIdleRight");
+				}
+
+				else if (CurBottomAnimation.find("Left") != std::string::npos)
+				{
+					ChangeBottomAnimation("PlayerSitDownIdleLeft");
+				}
+
+				m_SitDown = true;
+			}
+		}
+
+	}
 
 	m_Size = Vector2(0.f, 0.f);
 
@@ -508,7 +562,6 @@ void CPlayer::Jump(float DeltaTime)
 {
 	//m_Pos.y -= 200.f * DeltaTime;
 	CGameObject::Jump();
-	m_TouchGroundTime = 0;
 	m_JumpVelocity = 60.f;
 	Move(Vector2(0.f, -1.f));
 	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
@@ -552,12 +605,18 @@ void CPlayer::Down(float DeltaTime)
 			{
 				ChangeTopAnimation("PlayerJumpDownRightTop");
 				ChangeBottomAnimation("PlayerVerticalJumpRightBottom");
+
+				CCollider* Head = FindCollider("Head");
+				Head->SetEnable(true);
 			}
 
 			else if (CurBottom == "PlayerSitDownIdleLeft")
 			{
 				ChangeTopAnimation("PlayerJumpDownLeftTop");
 				ChangeBottomAnimation("PlayerVerticalJumpLeftBottom");
+
+				CCollider* Head = FindCollider("Head");
+				Head->SetEnable(true);
 			}
 
 		}
@@ -566,7 +625,7 @@ void CPlayer::Down(float DeltaTime)
 	else
 	{
 		ChangeTopAnimation("Blank");
-
+		
 		if (CurTop.find("Right") != std::string::npos)
 		{
 			ChangeBottomAnimation("PlayerSitDownIdleRight");
@@ -577,6 +636,9 @@ void CPlayer::Down(float DeltaTime)
 			ChangeBottomAnimation("PlayerSitDownIdleLeft");
 		}
 		m_SitDown = true;
+
+		CCollider* Head = FindCollider("Head");
+		Head->SetEnable(false);
 	}
 }
 
@@ -603,6 +665,41 @@ void CPlayer::LookUp(float DeltaTime)
 void CPlayer::MoveLeft(float DeltaTime)
 {
 	Move(Vector2(-1.f, 0.f));
+
+	// 위의 Move로 인해서 X방향으로만 이동하기 전에는
+	// 바닥과 충돌중이었으나 X방향으로 이동함으로써
+	// 바닥과 순간적으로 충돌하지 않으나 아직 바닥과의
+	// 충돌함수가 호출되기 전이라서 m_IsGround는 
+	// true로 되어 있어서 GameObject::Update에서 중력이
+	// 작용하는 코드도 이번 프레임에서는 건너뛴다.
+	// 따라서 여기서 추가적으로 중력을 작용하는 코드를 
+	// 작성해준다
+	if (m_IsGround)
+	{
+		CCollider* Bottom = FindCollider("Body");
+
+		Vector2 HitPoint = Bottom->GetHitPoint();
+		Vector2 Offset = Bottom->GetOffset();
+
+		float Width = ((CColliderBox*)Bottom)->GetWidth();
+		float Height = ((CColliderBox*)Bottom)->GetHeight();
+
+		RectInfo Rect;
+		Rect.Left = m_Pos.x - Width / 2.f + Offset.x;
+		Rect.Top = m_Pos.y - Height / 2.f + Offset.y;
+		Rect.Right = m_Pos.x + Width / 2.f + Offset.x;
+		Rect.Bottom = m_Pos.y + Height / 2.f + Offset.y;
+
+		((CColliderBox*)Bottom)->SetInfo(Rect);
+
+		if (Rect.Left > HitPoint.x || Rect.Right < HitPoint.x)
+		{
+			m_FallTime += DeltaTime * m_GravityAccel * 30;
+
+			m_Pos.y += 0.5f * GRAVITY * m_FallTime;
+		}
+	}
+
 	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 	// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
 	if (!m_Jump)
@@ -629,9 +726,12 @@ void CPlayer::MoveLeft(float DeltaTime)
 	// 점프중이라면 FrontJump 애니메이션으로 전환
 	else
 	{
-		// 만약 FrontJumpRight중인데 왼쪽이동키가 들어오면
+		// 만약 FrontJumpRight중인데 왼쪽 방향키가 들어오면
 		// 애니메이션 FrontJumpLeft로 전환하지 않는다
-		if (CurTop.find("FrontJumpRight") == std::string::npos)
+		// 점프하면서 Fire하는중이라도 FrontJumpLeft로 
+		// 변환하지 않는다
+		if (CurTop.find("FrontJumpRight") == std::string::npos &&
+			CurTop.find("PlayerNormalFireLeftTop") == std::string::npos)
 		{
 			ChangeTopAnimation("PlayerFrontJumpLeftTop");
 			ChangeBottomAnimation("PlayerFrontJumpLeftBottom");
@@ -642,6 +742,42 @@ void CPlayer::MoveLeft(float DeltaTime)
 void CPlayer::MoveRight(float DeltaTime)
 {
 	Move(Vector2(1.f, 0.f));
+
+	// 위의 Move로 인해서 X방향으로만 이동하기 전에는
+	// 바닥과 충돌중이었으나 X방향으로 이동함으로써
+	// 바닥과 순간적으로 충돌하지 않으나 아직 바닥과의
+	// 충돌함수가 호출되기 전이라서 m_IsGround는 
+	// true로 되어 있어서 GameObject::Update에서 중력이
+	// 작용하는 코드도 이번 프레임에서는 건너뛴다.
+	// 따라서 여기서 추가적으로 중력을 작용하는 코드를 
+	// 작성해준다
+	if (m_IsGround)
+	{
+		CCollider* Bottom = FindCollider("Body");
+
+		Vector2 HitPoint = Bottom->GetHitPoint();
+		Vector2 Offset = Bottom->GetOffset();
+
+		float Width = ((CColliderBox*)Bottom)->GetWidth();
+		float Height = ((CColliderBox*)Bottom)->GetHeight();
+
+		RectInfo Rect;
+		Rect.Left = m_Pos.x - Width / 2.f + Offset.x;
+		Rect.Top = m_Pos.y - Height / 2.f + Offset.y;
+		Rect.Right = m_Pos.x + Width / 2.f + Offset.x;
+		Rect.Bottom = m_Pos.y + Height / 2.f + Offset.y;
+
+		((CColliderBox*)Bottom)->SetInfo(Rect);
+
+		float MidPoint = (Rect.Left + Rect.Right) / 2;
+
+		if (MidPoint - ((CColliderBox*)Bottom)->GetWidth() / 2 > HitPoint.x)
+		{
+			m_FallTime += DeltaTime * m_GravityAccel * 30;
+
+			m_Pos.y += 0.5f * GRAVITY * m_FallTime;
+		}
+	}
 
 	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 	// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
@@ -671,7 +807,10 @@ void CPlayer::MoveRight(float DeltaTime)
 	{
 		// FrontJumpLeft중인데 오른쪽 방향키가 들어오면
 		// FrontJumpRight로 전환하지 않는다
-		if (CurTop.find("FrontJumpLeft") == std::string::npos)
+		// 점프하면서 Fire하는중이라도 FrontJumpRight로 
+		// 변환하지 않는다
+		if (CurTop.find("FrontJumpLeft") == std::string::npos &&
+			CurTop.find("PlayerNormalFireRightTop") == std::string::npos)
 		{
 			ChangeTopAnimation("PlayerFrontJumpRightTop");
 			ChangeBottomAnimation("PlayerFrontJumpRightBottom");
@@ -686,45 +825,89 @@ void CPlayer::BulletFire(float DeltaTime)
 
 	if (!m_IsGround && CurTop == "PlayerJumpDownRightTop")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerJumpAttackDownRightTop");
+		ChangeTopAnimation("PlayerJumpAttackDownRightTop");
 	}
 
 	else if (!m_IsGround && CurTop == "PlayerJumpDownLeftTop")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerJumpAttackDownLeftTop");
+		ChangeTopAnimation("PlayerJumpAttackDownLeftTop");
+	}
+
+	else if (!m_IsGround && CurTop == "PlayerVerticalJumpRightTop")
+	{
+		ChangeTopAnimation("PlayerNormalFireRightTop");
+	}
+
+	else if (!m_IsGround && CurTop == "PlayerVerticalJumpLeftTop")
+	{
+		ChangeTopAnimation("PlayerNormalFireLeftTop");
+	}
+
+	else if (!m_IsGround && CurTop == "PlayerFrontJumpRightTop")
+	{
+		ChangeTopAnimation("PlayerNormalFireRightTop");
+	}
+
+	else if (!m_IsGround && CurTop == "PlayerFrontJumpLeftTop")
+	{
+		ChangeTopAnimation("PlayerNormalFireLeftTop");
+	}
+
+	// 점프한상태로 총을 발사하고 Idle로 돌아와서
+	// 착지 전에 또 총을 발사할 때 들어오는 부분
+	else if (!m_IsGround && CurTop == "PlayerIdleRightTop")
+	{
+		ChangeTopAnimation("PlayerNormalFireRightTop");
+	}
+
+	// 점프한상태로 총을 발사하고 Idle로 돌아와서
+	// 착지 전에 또 총을 발사할 때 들어오는 부분
+	else if (!m_IsGround && CurTop == "PlayerIdleLeftTop")
+	{
+		ChangeTopAnimation("PlayerNormalFireLeftTop");
 	}
 
 	else if (CurTop == "PlayerLookUpRightTop")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerLookUpAttackRightTop");
+		ChangeTopAnimation("PlayerLookUpAttackRightTop");
 	}
 
 	else if (CurTop == "PlayerLookUpLeftTop")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerLookUpAttackLeftTop");
+		ChangeTopAnimation("PlayerLookUpAttackLeftTop");
 	}
 
 	else if (CurTop == "PlayerIdleRightTop" && CurBottom == "PlayerIdleRightBottom")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerNormalFireRightTop");
-		m_BottomAnimation->ChangeAnimation("PlayerNormalFireRightBottom");
+		ChangeTopAnimation("PlayerNormalFireRightTop");
+		ChangeBottomAnimation("PlayerNormalFireRightBottom");
 	}
 
 	else if (CurTop == "PlayerIdleLeftTop" && CurBottom == "PlayerIdleLeftBottom")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerNormalFireLeftTop");
-		m_BottomAnimation->ChangeAnimation("PlayerNormalFireLeftBottom");
+		ChangeTopAnimation("PlayerNormalFireLeftTop");
+		ChangeBottomAnimation("PlayerNormalFireLeftBottom");
 	}
 
 	else if (CurTop == "PlayerRunRightTop" && CurBottom == "PlayerRunRightBottom")
 	 {
-		 m_TopAnimation->ChangeAnimation("PlayerNormalFireRightTop");
+		ChangeTopAnimation("PlayerNormalFireRightTop");
 	 }
 
 	else if (CurTop == "PlayerRunLeftTop" && CurBottom == "PlayerRunLeftBottom")
 	 {
-		 m_TopAnimation->ChangeAnimation("PlayerNormalFireLeftTop");
+		ChangeTopAnimation("PlayerNormalFireLeftTop");
 	 }
+
+	else if (CurBottom == "PlayerSitDownIdleRight")
+	{
+		ChangeBottomAnimation("SitDownNormalAttackRight");
+	}
+
+	else if (CurBottom == "PlayerSitDownIdleLeft")
+	{
+		ChangeBottomAnimation("SitDownNormalAttackLeft");
+	}
 }
 
 void CPlayer::Pause(float DeltaTime)
@@ -747,38 +930,78 @@ void CPlayer::CloneBullet()
 		Vector2(0.f, 0.f), Vector2(20.f, 20.f));
 
 	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+	std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
 
-	if (CurTop.find("Down") != std::string::npos)
+	if (m_SitDown)
 	{
-		Bullet->SetPos(m_Pos + Vector2(5.f,
-			PLAYER_BOTTOMHEIGHT  + 10.f));
-		Bullet->SetDir(0.f, 1.f);
+		if (CurBottom.find("NormalAttackRight") != std::string::npos)
+		{
+			Bullet->SetPos(m_Pos + Vector2(5.f, -40.f));
+			Bullet->SetDir(1.f, 0.f);
+		}
+
+		else if (CurBottom.find("NormalAttackLeft") != std::string::npos)
+		{
+			Bullet->SetPos(m_Pos + Vector2(-5.f, -40.f));
+			Bullet->SetDir(-1.f, 0.f);
+		}
 	}
 
-	else if (CurTop.find("LookUp") != std::string::npos)
+	else
 	{
-		Bullet->SetPos(m_Pos - Vector2(0.f, PLAYER_TOPHEIGHT + 5.f));
-		Bullet->SetDir(0.f, -1.f);
-	}
+		if (CurTop.find("Down") != std::string::npos)
+		{
+			Bullet->SetPos(m_Pos + Vector2(5.f,
+				PLAYER_BOTTOMHEIGHT + 10.f));
+			Bullet->SetDir(0.f, 1.f);
+		}
 
-	else if (CurTop.find("FireRight") != std::string::npos)
-	{
-		Bullet->SetPos(m_Pos + Vector2(PLAYER_TOPWIDTH / 2.f + 10.f,
-			-(PLAYER_BOTTOMHEIGHT + PLAYER_TOPHEIGHT / 2.f) + 10.f));
-		Bullet->SetDir(1.f, 0.f);
-	}
+		else if (CurTop.find("LookUp") != std::string::npos)
+		{
+			Bullet->SetPos(m_Pos - Vector2(0.f, PLAYER_TOPHEIGHT + 5.f));
+			Bullet->SetDir(0.f, -1.f);
+		}
 
-	else if (CurTop.find("FireLeft") != std::string::npos)
-	{
-		Bullet->SetPos(m_Pos + Vector2(-PLAYER_TOPWIDTH / 2.f - 10.f,
-			-(PLAYER_BOTTOMHEIGHT + PLAYER_TOPHEIGHT / 2.f) + 10.f));
-		Bullet->SetDir(-1.f, 0.f);
-	}
+		else if (CurTop.find("FireRight") != std::string::npos)
+		{
+			Bullet->SetPos(m_Pos + Vector2(PLAYER_TOPWIDTH / 2.f + 10.f,
+				-(PLAYER_BOTTOMHEIGHT + PLAYER_TOPHEIGHT / 2.f) + 10.f));
+			Bullet->SetDir(1.f, 0.f);
+		}
 
+		else if (CurTop.find("FireLeft") != std::string::npos)
+		{
+			Bullet->SetPos(m_Pos + Vector2(-PLAYER_TOPWIDTH / 2.f - 10.f,
+				-(PLAYER_BOTTOMHEIGHT + PLAYER_TOPHEIGHT / 2.f) + 10.f));
+			Bullet->SetDir(-1.f, 0.f);
+		}
+	}
 
 	Bullet->SetTextureColorKey(255, 255, 255);
 
 	m_Scene->GetSceneResource()->SoundPlay("NormalAttack");
+}
+
+void CPlayer::CloneBomb()
+{
+	CSharedPtr<CBullet> Bomb = m_Scene->CreateObject<CBullet>(
+		"Bomb", "PlayerBomb",
+		Vector2(0.f, 0.f), Vector2(59.f, 60.f));
+
+	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+	std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
+
+	if (CurTop.find("Right") != std::string::npos)
+	{
+		Bomb->SetPos(m_Pos - Vector2(0.f, PLAYER_TOPHEIGHT + 5.f));
+		Bomb->SetDir(1.f, -1.f);
+		Bomb->SetVelocity(Vector2(500.f, 300.f));
+	}
+
+	else if (CurTop.find("Left") != std::string::npos)
+	{
+
+	}
 }
 
 void CPlayer::CreateTopAnimation()
@@ -874,7 +1097,7 @@ void CPlayer::SetBottomCurrentAnimation(const std::string& Name)
 	if (!m_BottomAnimation)
 		return;
 
-	m_BottomAnimation->SetCurrentAnimation(Name);
+	ChangeBottomAnimation(Name);
 }
 
 void CPlayer::ChangeTopAnimation(const std::string& Name)
@@ -941,32 +1164,32 @@ void CPlayer::TopAttackEnd()
 
 	if (CurTop == "PlayerJumpAttackDownRightTop")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerJumpDownRightTop");
+		ChangeTopAnimation("PlayerJumpDownRightTop");
 	}
 
 	else if (CurTop == "PlayerJumpAttackDownLeftTop")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerJumpDownLeftTop");
+		ChangeTopAnimation("PlayerJumpDownLeftTop");
 	}
 
 	else if (CurTop == "PlayerNormalFireRightTop")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerIdleRightTop");
+		ChangeTopAnimation("PlayerIdleRightTop");
 	}
 
 	else if (CurTop == "PlayerNormalFireLeftTop")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerIdleLeftTop");
+		ChangeTopAnimation("PlayerIdleLeftTop");
 	}
 
 	else if (CurTop == "PlayerLookUpAttackRightTop")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerLookUpRightTop");
+		ChangeTopAnimation("PlayerLookUpRightTop");
 	}
 
 	else if (CurTop == "PlayerLookUpAttackLeftTop")
 	{
-		m_TopAnimation->ChangeAnimation("PlayerLookUpLeftTop");
+		ChangeTopAnimation("PlayerLookUpLeftTop");
 	}
 }
 
@@ -974,11 +1197,55 @@ void CPlayer::BottomAttackEnd()
 {
 	if (m_BottomAnimation->m_CurrentAnimation->Sequence->GetName()
 		== "PlayerNormalFireRightBottom")
-		m_BottomAnimation->ChangeAnimation("PlayerIdleRightBottom");
+		ChangeBottomAnimation("PlayerIdleRightBottom");
 
 	else if (m_BottomAnimation->m_CurrentAnimation->Sequence->GetName()
 		== "PlayerNormalFireLeftBottom")
-		m_BottomAnimation->ChangeAnimation("PlayerIdleLeftBottom");
+		ChangeBottomAnimation("PlayerIdleLeftBottom");
+}
+
+void CPlayer::SitDownBottomAttackEnd()
+{
+	std::string BottomAni = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
+	if (BottomAni.find("Right") != std::string::npos)
+	{
+		ChangeTopAnimation("PlayerSitDownIdleRight");
+	}
+
+	else if (BottomAni.find("Left") != std::string::npos)
+	{
+		ChangeBottomAnimation("PlayerSitDownIdleLeft");
+	}
+}
+
+void CPlayer::Bomb(float DeltaTime)
+{
+	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+
+	if (CurTop.find("Right") != std::string::npos)
+	{
+		ChangeTopAnimation("BombRightTop");
+	}
+
+	else if (CurTop.find("Left") != std::string::npos)
+	{
+		ChangeTopAnimation("BombLeftTop");
+	}
+}
+
+void CPlayer::BombEnd()
+{
+	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+
+	if (CurTop.find("Right") != std::string::npos)
+	{
+		ChangeTopAnimation("PlayerIdleRightTop");
+	}
+
+	else if (CurTop.find("Left") != std::string::npos)
+	{
+		ChangeTopAnimation("PlayerIdleLeftTop");
+	}
 }
 
 void CPlayer::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
@@ -1025,13 +1292,16 @@ void CPlayer::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 			std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 			std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
 
-			if (CurTop.find("Run") == std::string::npos &&
-				CurTop.find("Fire") == std::string::npos &&
+			if (CurBottom.find("Run") == std::string::npos &&
+				CurBottom.find("Fire") == std::string::npos &&
 				CurBottom.find("Crawl") == std::string::npos &&
-				CurTop.find("Right") != std::string::npos)
+				CurBottom.find("Right") != std::string::npos)
 			{
 				ChangeTopAnimation("PlayerIdleRightTop");
 				ChangeBottomAnimation("PlayerIdleRightBottom");
+
+				CCollider* Head = FindCollider("Head");
+				Head->SetEnable(true);
 			}
 
 			else if (CurBottom.find("Run") == std::string::npos &&
@@ -1041,6 +1311,9 @@ void CPlayer::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 			{
 				ChangeTopAnimation("PlayerIdleLeftTop");
 				ChangeBottomAnimation("PlayerIdleLeftBottom");
+
+				CCollider* Head = FindCollider("Head");
+				Head->SetEnable(true);
 			}
 		}
 	}
@@ -1077,6 +1350,9 @@ void CPlayer::CollisionStay(CCollider* Src, CCollider* Dest, float DeltaTime)
 		// 바닥 충돌체에만 충돌한 경우
 		else if (FloorCollision)
 		{
+			std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+			std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
+
 			m_IsGround = true;
 			m_Jump = false;
 
@@ -1085,7 +1361,7 @@ void CPlayer::CollisionStay(CCollider* Src, CCollider* Dest, float DeltaTime)
 			m_Pos.y = Src->GetHitPoint().y;
 			m_FallStartY = m_Pos.y;
 			m_JumpVelocity = 0.f;
-			m_TouchGroundTime += DeltaTime;
+
 		}
 	}
 }

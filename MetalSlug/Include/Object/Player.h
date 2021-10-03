@@ -24,18 +24,7 @@ protected:
     CAnimation* m_TopAnimation;
     CAnimation* m_BottomAnimation;
     bool m_SitDown;
-    float m_TouchGroundTime;
 
-public:
-    float GetTouchGroundTime()  const
-    {
-        return m_TouchGroundTime;
-    }
-
-    void SetTouchGroundTime(float Time)
-    {
-        m_TouchGroundTime = Time;
-    }
 
 public:
     virtual void Start();
@@ -61,6 +50,7 @@ private:
     // 총쏘는 애니메이션의 EndNotify로 설정해두고
     // 총알 prototype을 만드는 함수
     void CloneBullet();
+    void CloneBomb();
 
 private:
     void CreateTopAnimation();
@@ -97,6 +87,9 @@ private:
 public:
     void TopAttackEnd();
     void BottomAttackEnd();
+    void SitDownBottomAttackEnd();
+    void Bomb(float DeltaTime);
+    void BombEnd();
 
     void CollisionBegin(CCollider* Src, CCollider* Dest,
         float DeltaTime);

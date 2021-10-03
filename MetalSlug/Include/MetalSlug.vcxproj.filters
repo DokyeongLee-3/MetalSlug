@@ -100,6 +100,9 @@
     <Filter Include="03.Object\04.StaticObject\03.Obstacle">
       <UniqueIdentifier>{bc5b272e-92b2-43c0-b1ef-5d24d579cfea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03.Object\05.Bomb">
+      <UniqueIdentifier>{df8da476-8a3a-4d02-a526-af998dfd8b5a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -224,6 +227,9 @@
     </ClCompile>
     <ClCompile Include="Object\Obstacle.cpp">
       <Filter>03.Object\04.StaticObject\03.Obstacle</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Bomb.cpp">
+      <Filter>03.Object\05.Bomb</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -385,6 +391,9 @@
     </ClInclude>
     <ClInclude Include="Object\Obstacle.h">
       <Filter>03.Object\04.StaticObject\03.Obstacle</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Bomb.h">
+      <Filter>03.Object\05.Bomb</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

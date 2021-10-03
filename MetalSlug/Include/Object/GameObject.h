@@ -58,6 +58,11 @@ public:
 		m_LifeTime = Time;
 	}
 
+	void SetVelocity(const Vector2& Velocity)
+	{
+		m_Velocity = Velocity;
+	}
+
 	void SetGravityAccel(float Accel)
 	{
 		m_GravityAccel = Accel;

@@ -120,6 +120,7 @@ bool CInput::Init(HWND hWnd)
 	CreateKey("MoveRight", 'D');
 	CreateKey("Fire", 'J');
 	CreateKey("Jump", 'K');
+	CreateKey("Bomb", 'L');
 
 	CreateKey("Pause", 'P');
 	SetCtrlKey("Pause", true);

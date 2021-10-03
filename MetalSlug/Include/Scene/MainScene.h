@@ -22,5 +22,6 @@ private:
 	// 하늘, 사막 풍경 등 Background만드는 함수
 	void LoadBackground();
 	void LoadSound();
+	void LoadPlayerAnimationSequence();
 };
 

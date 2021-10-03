@@ -60,25 +60,29 @@ void CColliderBox::Render(HDC hDC)
 	CCollider::Render(hDC);
 
 #ifdef _DEBUG
-	HBRUSH	Brush = CGameManager::GetInst()->GetGreenBrush();
 
-	if (!m_CollisionList.empty() || m_MouseCollision)
-		Brush = CGameManager::GetInst()->GetRedBrush(); 
+	if (m_Enable)
+	{
+		HBRUSH	Brush = CGameManager::GetInst()->GetGreenBrush();
 
-	CCamera* Camera = m_Scene->GetCamera();
+		if (!m_CollisionList.empty())
+			Brush = CGameManager::GetInst()->GetRedBrush();
 
-	RectInfo RenderInfo = m_Info;
+		CCamera* Camera = m_Scene->GetCamera();
+
+		RectInfo RenderInfo = m_Info;
 
 
-	RenderInfo.Left -= Camera->GetPos().x;
-	RenderInfo.Right -= Camera->GetPos().x;
-	RenderInfo.Top -= Camera->GetPos().y;
-	RenderInfo.Bottom -= Camera->GetPos().y;
+		RenderInfo.Left -= Camera->GetPos().x;
+		RenderInfo.Right -= Camera->GetPos().x;
+		RenderInfo.Top -= Camera->GetPos().y;
+		RenderInfo.Bottom -= Camera->GetPos().y;
 
-	RECT	rc = { (long)RenderInfo.Left, (long)RenderInfo.Top,
-		(long)RenderInfo.Right, (long)RenderInfo.Bottom };
+		RECT	rc = { (long)RenderInfo.Left, (long)RenderInfo.Top,
+			(long)RenderInfo.Right, (long)RenderInfo.Bottom };
 
-	FrameRect(hDC, &rc, Brush);
+		FrameRect(hDC, &rc, Brush);
+	}
 #endif // _DEBUG
 
 }

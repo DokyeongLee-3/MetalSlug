@@ -25,9 +25,27 @@ public:
 		m_Height = Height;
 	}
 
+	float GetWidth()	const
+	{
+		return m_Width;
+	}
+
+	float GetHeight()	const
+	{
+		return m_Height;
+	}
+
 	RectInfo GetInfo()	const
 	{
 		return m_Info;
+	}
+
+	void SetInfo(const RectInfo& Rect)
+	{
+		m_Info.Left = Rect.Left;
+		m_Info.Top = Rect.Top;
+		m_Info.Right = Rect.Right;
+		m_Info.Bottom = Rect.Bottom;
 	}
 
 	virtual float GetBottom()	const
