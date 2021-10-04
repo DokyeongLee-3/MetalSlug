@@ -47,6 +47,7 @@ bool CBullet::Init()
 	//SetImageStart(178.f * 5, 0.f);
 	//SetTextureColorKey(255, 0, 255);
 
+	SetZOrder(6);
 	SetPivot(0.5f, 0.5f);
 
 	//CreateAnimation();
@@ -117,7 +118,7 @@ void CBullet::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 		m_Pos.y + Random * Sign - 25.f };
 
 	CEffectHit* Hit = m_Scene->CreateObject<CEffectHit>(
-		"NormalAttacEffect", "NormalAttacEffect",
+		"NormalAttackEffect", "NormalAttackEffect",
 		BulletExplosion,
 		Vector2(66.f, 125.f));
 }

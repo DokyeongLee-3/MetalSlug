@@ -90,6 +90,7 @@ public:
     void SitDownBottomAttackEnd();
     void Bomb(float DeltaTime);
     void BombEnd();
+    void SitDownBombEnd();
 
     void CollisionBegin(CCollider* Src, CCollider* Dest,
         float DeltaTime);

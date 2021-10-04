@@ -25,6 +25,7 @@ void CStage::Start()
 bool CStage::Init()
 {
 	m_Pos = Vector2(0.f, 0.f);
+	m_ZOrder = 3;
 	SetPivot(0.f, 0.f);
 
 	m_PhysicsSimulate = false;

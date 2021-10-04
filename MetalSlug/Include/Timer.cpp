@@ -48,7 +48,7 @@ float CTimer::Update()
 	// <conio.h>에 포함되어 있음
 	//_cprintf(strFPS);
 	// 윈도우 타이틀바에 출력해주는 함수
-	SetWindowTextA(CGameManager::GetInst()->GetWindowHandle(), strFPS);
+	//SetWindowTextA(CGameManager::GetInst()->GetWindowHandle(), strFPS);
 	// visual studio 출력창에 출력해주는 함수
 	OutputDebugStringA(strFPS);
 #endif // _DEBUG

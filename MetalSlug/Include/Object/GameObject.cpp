@@ -22,7 +22,8 @@ CGameObject::CGameObject()	:
 	m_Jump(false),
 	m_JumpVelocity(0.f),
 	m_GravityAccel(10.f),
-	m_LifeTime(0.f)
+	m_LifeTime(0.f),
+	m_ZOrder(0)
 
 {
 }
@@ -39,6 +40,7 @@ CGameObject::CGameObject(const CGameObject& obj)	:
 	m_JumpVelocity = obj.m_JumpVelocity;
 	m_DamageEnable = obj.m_DamageEnable;
 	m_ObjType = obj.m_ObjType;
+	m_ZOrder = obj.m_ZOrder;
 
 	m_Start = false;
 
@@ -329,6 +331,8 @@ void CGameObject::Update(float DeltaTime)
 	// 중력을 적용한다.
 	if (!m_IsGround && m_PhysicsSimulate)
 	{
+		std::string Name = m_Name;
+
 		// 떨어지는 시간을 누적시켜준다.
 		m_FallTime += DeltaTime * m_GravityAccel;
 

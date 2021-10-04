@@ -68,6 +68,7 @@ public:
 	static int SortY(const void* Src, const void* Dest);
 	// 내림차순 정렬
 	static int SortZOrder(const void* Src, const void* Dest);
+	static int SortObjectZOrder(const void* Src, const void* Dest);
 
 private:
 	CGameObject* FindPrototype(const std::string& Name);

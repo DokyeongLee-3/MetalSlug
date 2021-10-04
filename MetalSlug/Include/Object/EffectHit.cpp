@@ -23,6 +23,8 @@ void CEffectHit::Start()
 
 	SetAnimationEndNotify<CEffectHit>("NormalAttackEffect", this,
 		&CEffectHit::AnimationFinish);
+	SetAnimationEndNotify<CEffectHit>("BombExplosionEffect", this,
+		&CEffectHit::AnimationFinish);
 }
 
 bool CEffectHit::Init()
@@ -31,9 +33,17 @@ bool CEffectHit::Init()
 		return false;
 
 	SetPivot(0.5f, 0.5f);
+	SetZOrder(7);
 
 	CreateAnimation();
 	AddAnimation("NormalAttackEffect", false, 0.3f);
+	AddAnimation("BombExplosionEffect", false, 1.f);
+
+	if (m_Name == "NormalAttackEffect")
+		ChangeAnimation("NormalAttackEffect");
+
+	else if (m_Name == "BombExplosionEffect")
+		ChangeAnimation("BombExplosionEffect");
 
 	return true;
 }

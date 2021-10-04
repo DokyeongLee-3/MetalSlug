@@ -16,6 +16,7 @@ protected:
     float		m_ForceXDir;
     float		m_ForceYDir;
     int		m_CollisionCount;
+    bool    m_StartFall;
 
 public:
     void SetDir(float x, float y)

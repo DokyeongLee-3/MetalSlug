@@ -9,6 +9,7 @@
 #include "../Object/Stage.h"
 #include "../Object/Background.h"
 #include "../Object/Bomb.h"
+#include "../Object/Obstacle.h"
 
 CMainScene::CMainScene()
 {
@@ -24,13 +25,16 @@ bool CMainScene::Init()
 	LoadAnimationSequence();
 	LoadBackground();
 	LoadSound();
+	LoadObstacle();
 
 	GetCamera()->SetWorldResolution(STAGE_WIDTH, STAGE_HEIGHT);
 
 	CStage* Stage = CreateObject<CStage>("Stage");
 
 	CEffectHit* EffectPrototype = CreatePrototype<CEffectHit>(
-		"NormalAttacEffect");
+		"NormalAttackEffect");
+	EffectPrototype = CreatePrototype<CEffectHit>(
+		"BombExplosionEffect");
 
 	// CreatePrototype에서 CBullet의 Init을 호출하므로
 	// CBullet의 Init에서 CBullet의 CColliderSphere을 생성한다
@@ -53,12 +57,19 @@ bool CMainScene::Init()
 	//	Collider->SetCollisionProfile("MonsterAttack");
 
 	CPlayer* Player = CreateObject<CPlayer>("Player", Vector2(100.f, 300.f));
-
+	
 	SetPlayer(Player);
 
 	GetCamera()->SetTarget(Player);
 	// 타겟이 화면 정중앙에 있도록 pivot 설정
 	GetCamera()->SetTargetPivot(0.5f, 0.5f);
+
+	CObstacle* FrontObstacle = CreateObject<CObstacle>("FrontObstacle",
+		Vector2(2050.f, 540.f), Vector2(335.f, 272.f));
+
+	CObstacle* BackObstacle = CreateObject<CObstacle>("BackObstacle",
+		Vector2(1100.f, 505.f), Vector2(490.f, 340.f));
+
 
 	//CMonster* Monster = CreateObject<CMonster>("Monster",
 	//	Vector2(1000.f, 100.f));
@@ -103,7 +114,7 @@ void CMainScene::LoadAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("NormalAttackEffect",
 		255, 0, 255);
 
-	fopen_s(&FileStream, "NormalAttackEffect.txt", "rt");
+	fopen_s(&FileStream, "FrameData/NormalAttackEffect.txt", "rt");
 
 	if (FileStream)
 	{
@@ -138,7 +149,7 @@ void CMainScene::LoadAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("BombRight",
 		0, 248, 0);
 
-	fopen_s(&FileStream, "BombRight.txt", "rt");
+	fopen_s(&FileStream, "FrameData/Bomb.txt", "rt");
 
 	if (FileStream)
 	{
@@ -154,6 +165,29 @@ void CMainScene::LoadAnimationSequence()
 			Data = {};
 		}
 	}
+
+	GetSceneResource()->CreateAnimationSequence("BombExplosionEffect",
+		"BombExplosionEffect", TEXT("Effect/BombExplosion.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("BombExplosionEffect",
+		0, 248, 0);
+
+	fopen_s(&FileStream, "FrameData/BombExplosion.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 21; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("BombExplosionEffect", Data);
+			Data = {};
+		}
+	}
 }
 
 void CMainScene::LoadBackground()
@@ -162,6 +196,7 @@ void CMainScene::LoadBackground()
 	CBackground* Sky = CreateObject<CBackground>("Sky");
 	Sky->SetPos(0.f, 50.f);
 	Sky->SetPivot(0.f, 0.f);
+	Sky->SetZOrder(0);
 	Sky->SetPhysicsSimulate(false);
 	Sky->SetTexture("Sky",
 		TEXT("Background/Background3.bmp"));
@@ -170,6 +205,7 @@ void CMainScene::LoadBackground()
 	CBackground* SandyWave1 = CreateObject<CBackground>("SandyWave1");
 	SandyWave1->SetPos(0.f, 500.f);
 	SandyWave1->SetPivot(0.f, 0.f);
+	SandyWave1->SetZOrder(1);
 	SandyWave1->SetPhysicsSimulate(false);
 	SandyWave1->CreateAnimation();
 	SandyWave1->AddAnimation("SandyWave", true, 1.5f, 1.f, false);
@@ -177,6 +213,7 @@ void CMainScene::LoadBackground()
 	CBackground* SandyWave2 = CreateObject<CBackground>("SandyWave2");
 	SandyWave2->SetPos(700.f, 495.f);
 	SandyWave2->SetPivot(0.f, 0.f);
+	SandyWave2->SetZOrder(1);
 	SandyWave2->SetPhysicsSimulate(false);
 	SandyWave2->CreateAnimation();
 	SandyWave2->AddAnimation("SandyWave", true, 2.f, 1.f, false);
@@ -184,6 +221,7 @@ void CMainScene::LoadBackground()
 	CBackground* SandyWave3 = CreateObject<CBackground>("SandyWave3");
 	SandyWave3->SetPos(1400.f, 500.f);
 	SandyWave3->SetPivot(0.f, 0.f);
+	SandyWave3->SetZOrder(1);
 	SandyWave3->SetPhysicsSimulate(false);
 	SandyWave3->CreateAnimation();
 	SandyWave3->AddAnimation("SandyWave", true, 2.f, 1.f, false);
@@ -191,6 +229,7 @@ void CMainScene::LoadBackground()
 	CBackground* SandyWave4 = CreateObject<CBackground>("SandyWave4");
 	SandyWave4->SetPos(2100.f, 500.f);
 	SandyWave4->SetPivot(0.f, 0.f);
+	SandyWave4->SetZOrder(1);
 	SandyWave4->SetPhysicsSimulate(false);
 	SandyWave4->CreateAnimation();
 	SandyWave4->AddAnimation("SandyWave", true, 2.f, 1.f, false);
@@ -199,6 +238,7 @@ void CMainScene::LoadBackground()
 	CBackground* Desert = CreateObject<CBackground>("Desert");
 	Desert->SetPos(0.f, 450.f);
 	Desert->SetPivot(0.f, 0.f);
+	Desert->SetZOrder(2);
 	Desert->SetPhysicsSimulate(false);
 	Desert->SetTexture("Desert",
 		TEXT("Background/Background1_transparent.bmp"));
@@ -224,7 +264,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerIdleRightTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerIdleRightTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -251,7 +291,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("PlayerIdleRightBottom",
 		255, 255, 255);
 
-	fopen_s(&FileStream, "PlayerIdleRightBottom.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerIdleRightBottom.txt", "rt");
 
 	if (FileStream)
 	{
@@ -278,7 +318,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerIdleLeftTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerIdleLeftTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -304,7 +344,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("PlayerIdleLeftBottom",
 		255, 255, 255);
 
-	fopen_s(&FileStream, "PlayerIdleLeftBottom.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerIdleLeftBottom.txt", "rt");
 
 	if (FileStream)
 	{
@@ -333,7 +373,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerNormalFireRightTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerNormalFireRightTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -359,7 +399,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerNormalFireRightBottom.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerNormalFireRightBottom.txt", "rt");
 
 	if (FileStream)
 	{
@@ -388,7 +428,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerNormalFireLeftTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerNormalFireLeftTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -414,7 +454,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerNormalFireLeftBottom.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerNormalFireLeftBottom.txt", "rt");
 
 	if (FileStream)
 	{
@@ -443,7 +483,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerRunRightTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerRunRightTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -469,7 +509,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerRunRightBottom.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerRunRightBottom.txt", "rt");
 
 	if (FileStream)
 	{
@@ -495,7 +535,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerRunLeftTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerRunLeftTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -521,7 +561,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerRunLeftBottom.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerRunLeftBottom.txt", "rt");
 
 	if (FileStream)
 	{
@@ -551,7 +591,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerVerticalJumpRightTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerVerticalJumpRightTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -577,7 +617,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerVerticalJumpRightBottom.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerVerticalJumpRightBottom.txt", "rt");
 
 	if (FileStream)
 	{
@@ -603,7 +643,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerVerticalJumpLeftTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerVerticalJumpLeftTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -629,7 +669,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerVerticalJumpLeftBottom.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerVerticalJumpLeftBottom.txt", "rt");
 
 	if (FileStream)
 	{
@@ -685,7 +725,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerJumpAttackDownRightTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerJumpAttackDownRightTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -711,7 +751,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerJumpAttackDownLeftTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerJumpAttackDownLeftTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -739,7 +779,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerLookUpRightTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerLookUpRightTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -765,7 +805,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerLookUpLeftTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerLookUpLeftTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -794,7 +834,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerLookUpAttackRightTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerLookUpAttackRightTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -820,7 +860,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerLookUpAttackLeftTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerLookUpAttackLeftTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -849,7 +889,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerFrontJumpRightTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerFrontJumpRightTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -875,7 +915,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerFrontJumpRightBottom.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerFrontJumpRightBottom.txt", "rt");
 
 	if (FileStream)
 	{
@@ -901,7 +941,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerFrontJumpLeftTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerFrontJumpLeftTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -927,7 +967,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerFrontJumpLeftBottom.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerFrontJumpLeftBottom.txt", "rt");
 
 	if (FileStream)
 	{
@@ -953,7 +993,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 		255, 255, 255);
 
 	// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	fopen_s(&FileStream, "PlayerSitDownIdleRight.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerSitDownIdleRight.txt", "rt");
 
 	if (FileStream)
 	{
@@ -978,7 +1018,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("PlayerSitDownIdleLeft",
 		255, 255, 255);
 
-	fopen_s(&FileStream, "PlayerSitDownIdleLeft.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerSitDownIdleLeft.txt", "rt");
 
 	if (FileStream)
 	{
@@ -1005,7 +1045,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("PlayerCrawlRight",
 		255, 255, 255);
 
-	fopen_s(&FileStream, "PlayerCrawlRight.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerCrawlRight.txt", "rt");
 
 	if (FileStream)
 	{
@@ -1030,7 +1070,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("PlayerCrawlLeft",
 		255, 255, 255);
 
-	fopen_s(&FileStream, "PlayerCrawlLeft.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerCrawlLeft.txt", "rt");
 
 	if (FileStream)
 	{
@@ -1057,7 +1097,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("SitDownNormalAttackRight",
 		255, 255, 255);
 
-	fopen_s(&FileStream, "PlayerSitDownNormalAttackRight.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerSitDownNormalAttackRight.txt", "rt");
 
 	if (FileStream)
 	{
@@ -1082,7 +1122,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("SitDownNormalAttackLeft",
 		255, 255, 255);
 
-	fopen_s(&FileStream, "PlayerSitDownNormalAttackLeft.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerSitDownNormalAttackLeft.txt", "rt");
 
 	if (FileStream)
 	{
@@ -1110,7 +1150,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("BombRightTop",
 		255, 255, 255);
 
-	fopen_s(&FileStream, "PlayerBombRightTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerBombRightTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -1135,7 +1175,7 @@ void CMainScene::LoadPlayerAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("BombLeftTop",
 		255, 255, 255);
 
-	fopen_s(&FileStream, "PlayerBombLeftTop.txt", "rt");
+	fopen_s(&FileStream, "FrameData/PlayerBombLeftTop.txt", "rt");
 
 	if (FileStream)
 	{
@@ -1153,4 +1193,68 @@ void CMainScene::LoadPlayerAnimationSequence()
 	}
 
 	fclose(FileStream);
+
+
+	GetSceneResource()->CreateAnimationSequence("PlayerSitDownBombRight",
+		"PlayerSitDownBombRight", TEXT("Player/Right/SitDown/SitDownBomb.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerSitDownBombRight",
+		255, 255, 255);
+
+	fopen_s(&FileStream, "FrameData/PlayerSitDownBombRight.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerSitDownBombRight", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+
+	GetSceneResource()->CreateAnimationSequence("PlayerSitDownBombLeft",
+		"PlayerSitDownBombLeft", TEXT("Player/Left/SitDown/SitDownBomb.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerSitDownBombLeft",
+		255, 255, 255);
+
+	fopen_s(&FileStream, "FrameData/PlayerSitDownBombLeft.txt", "rt");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("PlayerSitDownBombLeft", Data);
+			Data = {};
+		}
+	}
+
+	fclose(FileStream);
+}
+
+void CMainScene::LoadObstacle()
+{
+	GetSceneResource()->LoadTexture("FrontObstacle",
+		TEXT("Obstacle/Front.bmp"));
+	GetSceneResource()->SetTextureColorKey("FrontObstacle",
+		255, 255, 255);
+
+	GetSceneResource()->LoadTexture("BackObstacle",
+		TEXT("Obstacle/Back.bmp"));
+	GetSceneResource()->SetTextureColorKey("BackObstacle",
+		255, 255, 255);
 }

@@ -2,12 +2,15 @@
 #include "Bomb.h"
 #include "../Collision/ColliderBox.h"
 #include "../GameManager.h"
+#include "../Object/EffectHit.h"
+#include "../Scene/Scene.h"
 
 CBomb::CBomb() :
 	m_Dir(1.f, 0.f),
 	m_CollisionCount(0),
 	m_ForceXDir(70.f),
-	m_ForceYDir(4000.f)
+	m_ForceYDir(150.f),
+	m_StartFall(false)
 {
 }
 
@@ -40,17 +43,19 @@ bool CBomb::Init()
 	if (!CGameObject::Init())
 		return false;
 
-	m_GravityAccel = 8.f;
+	SetZOrder(6);
+
+	m_GravityAccel = 9.f;
 	m_IsGround = false;
-	m_PhysicsSimulate = true;
+	m_PhysicsSimulate = false;
 
 	SetPivot(0.5f, 0.5f);
 
-	AddAnimation("BombRight", true, 1.2f);
-	AddAnimation("BombLeft", true, 1.2f);
+	AddAnimation("BombRight", true, 0.8f);
+	AddAnimation("BombLeft", true, 0.8f);
 
 	CColliderBox* Body = AddCollider<CColliderBox>("Body");
-	Body->SetExtent(50.f, 60.f);
+	Body->SetExtent(35.f, 55.f);
 	Body->SetOffset(0.f, 0.f);
 
 	return true;
@@ -63,13 +68,29 @@ void CBomb::Update(float DeltaTime)
 	Vector2 Dir = m_Dir;
 	Dir.Normalize();
 
-	Vector2 CurrentMove;
+
+	Vector2 CurrentMove = {};
+
 	CurrentMove.x = Dir.x * m_ForceXDir * CGameManager::GetInst()->GetDeltaTime() * m_TimeScale * m_GravityAccel;
-	CurrentMove.y = Dir.y * m_ForceYDir * CGameManager::GetInst()->GetDeltaTime() * m_TimeScale * m_GravityAccel;
+
+	if (!m_PhysicsSimulate)
+	{
+		CurrentMove.y = Dir.y * m_ForceYDir * CGameManager::GetInst()->GetDeltaTime() * m_TimeScale * m_GravityAccel;
+	}
+
 	m_Pos += CurrentMove;
 
-	if (m_ForceYDir >= 0.f)
-		m_ForceYDir -= GRAVITY * 10;
+	if (m_ForceYDir > 0.f)
+		m_ForceYDir -= GRAVITY / 9.f;
+	
+	else if (m_ForceYDir <= 0.f && !m_StartFall)
+	{
+		m_PhysicsSimulate = true;
+		m_FallStartY = m_Pos.y;
+		m_StartFall = true;
+		m_FallTime = 0.f;
+	}
+
 }
 
 void CBomb::PostUpdate(float DeltaTime)
@@ -102,12 +123,18 @@ void CBomb::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 		{
 			++m_CollisionCount;
 
-			CGameObject::Jump();
-			m_JumpVelocity = 40.f;
+			m_PhysicsSimulate = false;
+			m_StartFall = false;
+			m_ForceXDir = 40.f;
+			m_ForceYDir = 120.f;
+			m_Pos.y = Src->GetHitPoint().y;
 		}
 
 		else if (m_CollisionCount == 1)
 		{
+			CEffectHit* Hit = m_Scene->CreateObject<CEffectHit>(
+				"BombExplosionEffect", "BombExplosionEffect",
+				m_Pos + Vector2(0.f, -135.f), Vector2(150.f,311.f));
 			Destroy();
 		}
 	}

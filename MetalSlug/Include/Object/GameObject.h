@@ -49,10 +49,16 @@ protected:
 	float		m_FallStartY;
 	bool		m_Jump;
 	float		m_JumpVelocity;
+	int m_ZOrder;
 
 	bool m_DamageEnable;
 
 public:
+	void SetZOrder(int ZOrder)
+	{
+		m_ZOrder = ZOrder;
+	}
+
 	void SetLifeTime(float Time)
 	{
 		m_LifeTime = Time;
@@ -138,6 +144,11 @@ public:
 		bool Loop);
 
 public:
+	int GetZOrder()	const
+	{
+		return m_ZOrder;
+	}
+
 	Vector2	GetOffset() const
 	{
 		return m_Offset;

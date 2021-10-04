@@ -116,6 +116,8 @@ bool CScene::Init()
 
 bool CScene::Update(float DeltaTime)
 {
+	// Player의 위치를 확인하고 나서 거리 조절을 해야하는
+	// 몬스터가 있으므로 Player를 먼저 Update해주자
 	if(m_Player)
 		m_Player->Update(DeltaTime);
 
@@ -246,6 +248,7 @@ bool CScene::Collision(float DeltaTime)
 		}
 	}
 
+	/*
 	{
 		if (m_UICount >= 2)
 		{
@@ -282,6 +285,8 @@ bool CScene::Collision(float DeltaTime)
 			++i;
 		}
 	}
+	*/
+
 
 	m_Collision->Collision(DeltaTime);
 
@@ -353,13 +358,8 @@ bool CScene::Render(HDC hDC)
 		}
 	}
 
-	// 2개의 object가 겹쳐졌을 때 발밑 좌표가 큰
-	// 오브젝트가 위에 오도록 해야하는데 그렇다면 
-	// 발밑 좌표가 큰 object를 m_RenderArray의 뒤에 오도록
-	// 해야한다. 그렇게 하기 위해 발밑 좌표 기준으로
-	// 오름차순으로 Rendering전에 sorting해준다
-	/*qsort(m_RenderArray, (size_t)m_RenderCount, sizeof(CGameObject*),
-		CScene::SortY);*/
+	qsort(m_RenderArray, (size_t)m_RenderCount, sizeof(CGameObject*),
+		CScene::SortObjectZOrder);
 
 	for (int i = 0; i < m_RenderCount; ++i)
 	{
@@ -439,6 +439,23 @@ int CScene::SortZOrder(const void* Src, const void* Dest)
 		return -1;
 
 	else if (SrcZ < DestZ)
+		return 1;
+
+	return 0;
+}
+
+int CScene::SortObjectZOrder(const void* Src, const void* Dest)
+{
+	CGameObject* SrcObj = *(CGameObject**)Src;
+	CGameObject* DestObj = *(CGameObject**)Dest;
+
+	int SrcZ = SrcObj->GetZOrder();
+	int DestZ = DestObj->GetZOrder();
+
+	if (SrcZ < DestZ)
+		return -1;
+
+	else if (SrcZ > DestZ)
 		return 1;
 
 	return 0;
