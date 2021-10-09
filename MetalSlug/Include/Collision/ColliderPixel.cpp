@@ -23,7 +23,7 @@ CColliderPixel::~CColliderPixel()
 
 bool CColliderPixel::SetPixelInfo(const TCHAR* FileName, const std::string& PathKey)
 {
-	m_FileName = FileName;
+	lstrcpy(m_FileName, FileName);
 
 	const PathInfo* Info = CPathManager::GetInst()->FindPath(PathKey);
 
@@ -34,10 +34,12 @@ bool CColliderPixel::SetPixelInfo(const TCHAR* FileName, const std::string& Path
 	lstrcat(FullPath, FileName);
 
 	FILE* pFile = NULL;
-
 	char strPath[MAX_PATH] = {};
-	WideCharToMultiByte(CP_ACP, 0, FullPath, lstrlen(FullPath),
-		strPath, lstrlen(FullPath), NULL, NULL);
+
+	int ConvertLength = WideCharToMultiByte(CP_ACP, 0, FullPath, -1, nullptr, 0, 0, 0);
+
+	WideCharToMultiByte(CP_ACP, 0, FullPath, -1,
+		strPath, ConvertLength, 0, 0);
 
 	// rb는 read binary라는 의미의 mode
 	fopen_s(&pFile, strPath, "rb");
@@ -45,14 +47,15 @@ bool CColliderPixel::SetPixelInfo(const TCHAR* FileName, const std::string& Path
 	if (!pFile)
 		return false;
 
+
 	BITMAPFILEHEADER fh;
 	// 미리 정의된 BITMAPINFOHEADER 구조체에 
 	// bit 가로, 세로 수가 멤버로 있고
 	// fread로 읽어오면 멤버에 비트수가 할당되어 있음
 	BITMAPINFOHEADER ih;
 
-	fread(&fh, sizeof(fh), 1, pFile);
-	fread(&ih, sizeof(ih), 1, pFile);
+	size_t readfh = fread(&fh, sizeof(BITMAPFILEHEADER), 1, pFile);
+	size_t readih = fread(&ih, sizeof(BITMAPINFOHEADER), 1, pFile);
 
 	m_Width = ih.biWidth;
 	m_Height = ih.biHeight;
@@ -65,7 +68,7 @@ bool CColliderPixel::SetPixelInfo(const TCHAR* FileName, const std::string& Path
 	// 비트맵의 맨 아래에서부터 좌에서 우 방향으로
 	// 위로 올라오면서 읽힌 것을 알 수 있다.
 	// 즉 비트맵 파일은 바닥의 비트 정보부터 저장한다.
-	fread(&m_vecPixel[0], sizeof(PIXEL), m_vecPixel.size(), pFile);
+	size_t res = fread(&m_vecPixel[0], sizeof(PIXEL), m_vecPixel.size(), pFile);
 
 	PPIXEL pPixelArr = new PIXEL[m_Width];
 
@@ -75,10 +78,12 @@ bool CColliderPixel::SetPixelInfo(const TCHAR* FileName, const std::string& Path
 		// 현재 인덱스의 픽셀 한 줄씩 따로 저장해둔다.
 		memcpy(pPixelArr, &m_vecPixel[i * m_Width],
 			sizeof(PIXEL) * m_Width);
+
 		// 가운데를 기준으로 데칼코마니처럼 한줄씩 바꿔준다.
 		memcpy(&m_vecPixel[i * m_Width],
 			&m_vecPixel[(m_Height - i - 1) * m_Width],
 			sizeof(PIXEL) * m_Width);
+
 		// 따로 저장해준 pPixelArr을 가운데를 기준으로 반대부분에 저장
 		memcpy(&m_vecPixel[(m_Height - i - 1) * m_Width], pPixelArr,
 			sizeof(PIXEL) * m_Width);

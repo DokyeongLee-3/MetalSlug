@@ -27,6 +27,7 @@ bool CStage::Init()
 	m_Pos = Vector2(0.f, 0.f);
 	m_ZOrder = 3;
 	SetPivot(0.f, 0.f);
+	m_ObjType = EObject_Type::Stage;
 
 	m_PhysicsSimulate = false;
 
@@ -37,7 +38,7 @@ bool CStage::Init()
 	Pixel->SetPixelInfo(TEXT("Stage/Stage2_Collider.bmp"));
 	Pixel->SetExtent((int)STAGE_WIDTH, (int)STAGE_HEIGHT);
 	Pixel->SetCollisionProfile("Default");
-
+	Pixel->SetStartPos(0.f, 0.f);
 
 	return true;
 }

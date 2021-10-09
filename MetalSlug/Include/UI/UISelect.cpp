@@ -7,7 +7,7 @@
 #include "../GameManager.h"
 #include "../Input.h"
 #include "../Scene/MainScene.h"
-
+#include "../Object/Player.h"
 
 CUISelect::CUISelect()
 {
@@ -47,7 +47,7 @@ bool CUISelect::Init()
 		0.8f);
 
 	SelectBackground->AddAnimation("SelectSceneIdle", true,
-		2.2f);
+		2.4f);
 
 	return true;
 }

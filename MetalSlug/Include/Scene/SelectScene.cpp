@@ -117,7 +117,7 @@ void CSelectScene::LoadAnimationSequence()
 	GetSceneResource()->SetTextureColorKey("SelectSceneIdle",
 		255, 255, 255);
 
-	for (int i = 0; i < 18; ++i)
+	for (int i = 0; i < 16; ++i)
 	{
 		GetSceneResource()->AddAnimationFrameData("SelectSceneIdle",
 			i * 1024.f, 0.f, 1024.f, 768.f);

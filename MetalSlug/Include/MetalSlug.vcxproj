@@ -161,6 +161,7 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.cpp" />
+    <ClCompile Include="Object\Arabian.cpp" />
     <ClCompile Include="Object\Background.cpp" />
     <ClCompile Include="Object\Bomb.cpp" />
     <ClCompile Include="Object\Bullet.cpp" />
@@ -214,6 +215,7 @@
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Math.h" />
+    <ClInclude Include="Object\Arabian.h" />
     <ClInclude Include="Object\Background.h" />
     <ClInclude Include="Object\Bomb.h" />
     <ClInclude Include="Object\Bullet.h" />

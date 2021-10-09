@@ -24,8 +24,20 @@ private:
 	// 예를 들어 TargetPivot을 0.5f, 0.5f로 해놓으면
 	// 타겟이 화면 정중앙에 오도록 한다
 	Vector2		m_TargetPivot;
+	bool m_CamFixX;
+	bool m_CamFixY;
 
 public:
+	bool GetCamFixX()	const
+	{
+		return m_CamFixX;
+	}
+
+	bool GetCamFixY()	const
+	{
+		return m_CamFixY;
+	}
+
 	Vector2	GetPos()	const
 	{
 		return m_Pos;
@@ -52,6 +64,16 @@ public:
 	}
 
 public:
+	void SetCamFixX(bool CamFix)
+	{
+		m_CamFixX = CamFix;
+	}
+
+	void SetCamFixY(bool CamFix)
+	{
+		m_CamFixY = CamFix;
+	}
+
 	void SetPos(const Vector2& Pos)
 	{
 		m_Pos = Pos;

@@ -26,7 +26,6 @@ protected:
 
 	std::list<CSharedPtr<CCollider>> m_CollisionList;
 
-	bool m_MouseCollision;
 	Vector2 m_HitPoint;
 
 public:
@@ -42,11 +41,6 @@ public:
 	}
 
 public:
-	void SetMouseCollision(bool MouseCollision)
-	{
-		m_MouseCollision = MouseCollision;
-	}
-
 	void SetEnable(bool Enable)
 	{
 		m_Enable = Enable;
@@ -114,6 +108,7 @@ public:
 	// m_CollisionList에 상대방 충돌체를 추가해준다
 	void AddCollisionList(CCollider* Collider);
 	bool CheckCollisionList(CCollider* Collider);
+	bool CheckCollisionList(const std::string& Name);
 	void DeleteCollisionList(CCollider* Collider);
 	void ClearCollisionList();
 	void CallCollisionBegin(CCollider* Dest, float DeltaTime);

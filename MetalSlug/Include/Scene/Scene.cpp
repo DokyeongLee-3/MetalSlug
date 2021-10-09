@@ -248,7 +248,6 @@ bool CScene::Collision(float DeltaTime)
 		}
 	}
 
-	/*
 	{
 		if (m_UICount >= 2)
 		{
@@ -277,15 +276,15 @@ bool CScene::Collision(float DeltaTime)
 				continue;
 			}
 
+			// CUIWindow::Collision에서 
 			// UIWindow내 Widget들을 ZOrder에 따라 정렬
 			m_UIArray[i]->Collision(DeltaTime);
 			// CSceneCollision::m_vecUIWindow 배열에 push
-			m_Collision->AddUIWindow(m_UIArray[i]);
+			// m_Collision->AddUIWindow(m_UIArray[i]);
 
 			++i;
 		}
 	}
-	*/
 
 
 	m_Collision->Collision(DeltaTime);

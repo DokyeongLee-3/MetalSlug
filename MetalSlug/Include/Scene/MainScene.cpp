@@ -10,6 +10,7 @@
 #include "../Object/Background.h"
 #include "../Object/Bomb.h"
 #include "../Object/Obstacle.h"
+#include "../Collision/ColliderPixel.h"
 
 CMainScene::CMainScene()
 {
@@ -47,6 +48,11 @@ bool CMainScene::Init()
 	if (Collider)
 		Collider->SetCollisionProfile("PlayerAttack");
 
+	Collider = Bomb->FindCollider("Body");
+
+	if (Collider)
+		Collider->SetCollisionProfile("PlayerAttack");
+
 	// CreatePrototype에서 CBullet의 Init을 호출하므로
 	// CBullet의 Init에서 CBullet의 CColliderSphere을 생성한다
 	// 따라서 MonsterBullet이라는 prototype에도 이미 Collider가 존재
@@ -56,19 +62,13 @@ bool CMainScene::Init()
 	//if (Collider)
 	//	Collider->SetCollisionProfile("MonsterAttack");
 
-	CPlayer* Player = CreateObject<CPlayer>("Player", Vector2(100.f, 300.f));
+	CPlayer* Player = CreateObject<CPlayer>("Player", Vector2(100.f, 500.f));
 	
 	SetPlayer(Player);
 
 	GetCamera()->SetTarget(Player);
 	// 타겟이 화면 정중앙에 있도록 pivot 설정
 	GetCamera()->SetTargetPivot(0.5f, 0.5f);
-
-	CObstacle* FrontObstacle = CreateObject<CObstacle>("FrontObstacle",
-		Vector2(2050.f, 540.f), Vector2(335.f, 272.f));
-
-	CObstacle* BackObstacle = CreateObject<CObstacle>("BackObstacle",
-		Vector2(1100.f, 505.f), Vector2(490.f, 340.f));
 
 
 	//CMonster* Monster = CreateObject<CMonster>("Monster",
@@ -699,10 +699,10 @@ void CMainScene::LoadPlayerAnimationSequence()
 	AnimationFrameData Data = {};
 	Data.StartPos.x = 0.f;
 	Data.StartPos.y = 0.f;
-	Data.Size.x = 60.f;
-	Data.Size.y = 105.f;
-	Data.Offset.x = 0.f;
-	Data.Offset.y = 50.f;
+	Data.Size.x = 70.f;
+	Data.Size.y = 123.f;
+	Data.Offset.x = 2.f;
+	Data.Offset.y = 62.f;
 
 	GetSceneResource()->AddAnimationFrameData("PlayerJumpDownRightTop", Data);
 
@@ -1257,4 +1257,27 @@ void CMainScene::LoadObstacle()
 		TEXT("Obstacle/Back.bmp"));
 	GetSceneResource()->SetTextureColorKey("BackObstacle",
 		255, 255, 255);
+
+	CObstacle* FrontObstacle = CreateObject<CObstacle>("FrontObstacle",
+		Vector2(2021.f, 522.f), Vector2(400.f, 314.f));
+
+	FrontObstacle->SetTexture("FrontObstacle");
+
+	CObstacle* BackObstacle = CreateObject<CObstacle>("BackObstacle",
+		Vector2(1838.f, 530.f), Vector2(480.f, 288.f));
+
+	BackObstacle->SetTexture("BackObstacle");
+
+
+	CColliderPixel* Pixel = FrontObstacle->AddCollider<CColliderPixel>("FrontObstaclePixel");
+	Pixel->SetPixelInfo(TEXT("Obstacle/Front_Collider.bmp"));
+	Pixel->SetExtent((int)400, (int)314);
+	Pixel->SetStartPos(2021.f, 522.f);
+	Pixel->SetCollisionProfile("Obstacle");
+
+	Pixel = BackObstacle->AddCollider<CColliderPixel>("BackObstaclePixel");
+	Pixel->SetPixelInfo(TEXT("Obstacle/Back_Collider.bmp"));
+	Pixel->SetExtent((int)480, (int)288);
+	Pixel->SetStartPos(1838.f, 530.f);
+	Pixel->SetCollisionProfile("Obstacle");
 }

@@ -15,11 +15,24 @@ protected:
 protected:
 	int	m_Width;
 	int	m_Height;
+	Vector2 m_StartPos;
 
 	std::vector<PIXEL> m_vecPixel;
-	std::wstring	m_FileName;
+	TCHAR	m_FileName[MAX_PATH];
 
 public:
+	void SetStartPos(float X, float Y)
+	{
+		m_StartPos.x = X;
+		m_StartPos.y = Y;
+	}
+
+	void SetStartPos(const Vector2& StartPos)
+	{
+		m_StartPos.x = StartPos.x;
+		m_StartPos.y = StartPos.y;
+	}
+
 	void SetExtent(int Width, int Height)
 	{
 		m_Width = Width;
@@ -39,6 +52,11 @@ public:
 	const PIXEL& GetPixel(int Index)	const
 	{
 		return m_vecPixel[Index];
+	}
+
+	const Vector2& GetStartPos()	const
+	{
+		return m_StartPos;
 	}
 
 public:

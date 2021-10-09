@@ -2,7 +2,9 @@
 
 CCamera::CCamera()	:
 	m_Resolution(1024.f, 768.f),
-	m_WorldResolution(WORLD_WIDTH, WORLD_HEIGHT)
+	m_WorldResolution(WORLD_WIDTH, WORLD_HEIGHT),
+	m_CamFixX(false),
+	m_CamFixY(false)
 {
 }
 
@@ -12,6 +14,8 @@ CCamera::~CCamera()
 
 bool CCamera::Init()
 {
+	m_CamFixY = true;
+	m_Pos.y = WORLD_HEIGHT - m_Resolution.y;
 	return false;
 }
 
@@ -26,8 +30,17 @@ void CCamera::Update(float DeltaTime)
 
 		else
 		{
-			m_Pos = m_Target->GetPos() - m_TargetPivot * m_Resolution +
-				m_TargetOffset;
+			if (!m_CamFixX)
+			{
+				m_Pos.x = m_Target->GetPos().x - m_TargetPivot.x * m_Resolution.x +
+					m_TargetOffset.x;
+			}
+
+			if (!m_CamFixY)
+			{
+				m_Pos.y = m_Target->GetPos().y - m_TargetPivot.y * m_Resolution.y +
+					m_TargetOffset.y;
+			}
 		}
 	}
 	

@@ -30,6 +30,7 @@ enum ECollision_Channel
 	Channel_Monster,
 	Channel_PlayerAttack,
 	Channel_MonsterAttack,
+	Channel_Obstacle,
 	Channel_Max
 };
 
@@ -52,6 +53,9 @@ enum class EObject_Type
 {
 	GameObject,
 	Character,
+	Player,
 	Bullet,
-	Effect
+	Effect,
+	Obstacle,
+	Stage
 };

@@ -3,6 +3,7 @@
 #include "ColliderBox.h"
 #include "ColliderSphere.h"
 #include "ColliderPixel.h"
+#include "../Object/GameObject.h"
 
 bool CCollision::CollisionBoxToBox(CColliderBox* Src, CColliderBox* Dest)
 {
@@ -114,58 +115,116 @@ bool CCollision::CollisionBoxToPixel(CColliderBox* Src,
 
 	RectInfo Info = Src->GetInfo();
 
-	StartX = Info.Left < 0 ? 0 : (int)Info.Left;
-	EndX = Info.Right > Dest->GetWidth() ? (int)Dest->GetWidth() - 1 : (int)Info.Right;
-
-	StartY = Info.Top < 0 ? 0 : (int)Info.Top;
-	EndY = Info.Bottom > Dest->GetHeight() ? (int)Dest->GetHeight() - 1 : (int)Info.Bottom;
-
-	// 아래 두 멤버는 CCollider의 멤버
-	// 만약 player와 stage 충돌 체크를 위해 stage가 
-	// CollisionRectToPixel를 부르고 m_bFloorCollision을
-	// true로 만들고 그대로 두고 리턴하고
-	// CCollisionManager::Collision(fDeltaTime)에서
-	// 충돌 체크할 다음 element(*iter1)가 Arabian이면
-	// 또 stage가 CollisionRectToPixel를 부를텐데 그때
-	// ColliderPixel의 m_bCamCollision, m_bFloorCollision가
-	// 이미 true일 것이다. 충돌 체크를 하기도 전에 둘중 하나라도
-	// true라는건 충돌 체크에 오류를 발생시킴
-	Src->SetCamCollision(false);
-	Src->SetFloorCollision(false);
-
-	int Width = (int)(Dest->GetWidth());
-	
-
-	for (int i = StartY; i <= EndY; i++)
+	if (Dest->GetOwner()->GetObjType() == EObject_Type::Stage)
 	{
-		for (int j = StartX; j <= EndX; j++)
+
+		StartX = Info.Left < 0 ? 0 : (int)Info.Left;
+		EndX = Info.Right > Dest->GetWidth() ? (int)Dest->GetWidth() - 1 : (int)Info.Right;
+
+		StartY = Info.Top < 0 ? 0 : (int)Info.Top;
+		EndY = Info.Bottom > Dest->GetHeight() ? (int)Dest->GetHeight() - 1 : (int)Info.Bottom;
+
+		// 아래 두 멤버는 CCollider의 멤버
+		// 만약 player와 stage 충돌 체크를 위해 stage가 
+		// CollisionRectToPixel를 부르고 m_bFloorCollision을
+		// true로 만들고 그대로 두고 리턴하고
+		// CCollisionManager::Collision(fDeltaTime)에서
+		// 충돌 체크할 다음 element(*iter1)가 Arabian이면
+		// 또 stage가 CollisionRectToPixel를 부를텐데 그때
+		// ColliderPixel의 m_bCamCollision, m_bFloorCollision가
+		// 이미 true일 것이다. 충돌 체크를 하기도 전에 둘중 하나라도
+		// true라는건 충돌 체크에 오류를 발생시킴
+		Src->SetCamCollision(false);
+		Src->SetFloorCollision(false);
+
+		int Width = (int)(Dest->GetWidth());
+
+
+		for (int i = StartY; i <= EndY; i++)
 		{
-			int idx = i * Width + j;
-			const PIXEL& pixel = Dest->GetPixel(idx);
-
-			//// 카메라 충돌체
-			if (pixel.r == 0 && pixel.g == 255 && pixel.b == 255)
+			for (int j = StartX; j <= EndX; j++)
 			{
-				//m_tHitPoint.x = j;
-				//m_tHitPoint.y = i;
+				int idx = i * Width + j;
+				const PIXEL& pixel = Dest->GetPixel(idx);
 
-				// 카메라 충돌체랑 충돌했다면 동시에 바닥 충돌체랑
-				// 충돌했을 것이므로 계속 for loop를 돌게해서 바닥이랑
-				// rect의 hit point를 찾아내게 한다.
-				// rect의 충돌 callback함수(ex. CPlayer::Hit)에서
-				// 그 hit point(바닥)에 계속 닿아 있게 한다
-				Src->SetCamCollision(true);
-			}
+				//// 카메라 충돌체
+				if (pixel.r == 0 && pixel.g == 255 && pixel.b == 255)
+				{
+					//m_tHitPoint.x = j;
+					//m_tHitPoint.y = i;
 
-			if (pixel.r == 255 && pixel.g == 0 && pixel.b == 255)
-			{
-				Src->SetHitPoint((float)j, (float)i);
+					// 카메라 충돌체랑 충돌했다면 동시에 바닥 충돌체랑
+					// 충돌했을 것이므로 계속 for loop를 돌게해서 바닥이랑
+					// rect의 hit point를 찾아내게 한다.
+					// rect의 충돌 callback함수(ex. CPlayer::Hit)에서
+					// 그 hit point(바닥)에 계속 닿아 있게 한다
+					Src->SetCamCollision(true);
+				}
 
-				Src->SetFloorCollision(true);
+				if (pixel.r == 255 && pixel.g == 0 && pixel.b == 255)
+				{
+					Src->SetHitPoint((float)j, (float)i);
 
-				return true;
+					Src->SetFloorCollision(true);
+
+					return true;
+				}
 			}
 		}
+	}
+
+
+	else if (Dest->GetOwner()->GetObjType() == EObject_Type::Obstacle)
+	{
+		Vector2 PrevPos = Src->GetOwner()->GetPrevPos();
+		Vector2 Pos = Src->GetOwner()->GetPos();
+
+		int DestStartPosX = (int)Dest->GetStartPos().x;
+		int DestStartPosY = (int)Dest->GetStartPos().y;
+
+		Info.Left -= DestStartPosX;
+		Info.Right -= DestStartPosX;
+		Info.Top -= DestStartPosY;
+		Info.Bottom -= DestStartPosY;
+
+		StartX = Info.Left < 0 ? 0 : (int)Info.Left;
+		EndX = Info.Right >= Dest->GetWidth() ? Dest->GetWidth() - 1 : (int)Info.Right;
+
+		StartY = Info.Top < 0 ? 0 : (int)Info.Top;
+		EndY = Info.Bottom >= Dest->GetHeight() ? Dest->GetHeight() - 1 : (int)Info.Bottom;
+
+		Src->SetFloorCollision(false);
+		int Width = (int)(Dest->GetWidth());
+
+		for (int i = StartY; i <= EndY; i++)
+		{
+			for (int j = StartX; j <= EndX; j++)
+			{
+				int idx = i * Width + j;
+				const PIXEL& pixel = Dest->GetPixel(idx);
+
+				if (pixel.r == 255 && pixel.g == 0 && pixel.b == 255)
+				{
+
+					if (PrevPos.y - Pos.y > 0.f)
+						return false;
+
+					// 내려오긴 하는 중인데 완전히 다 올라가서 내려오면서 
+					// 지형지물을 밟는게 아니라 Rect충돌체가 픽셀 충돌체게
+					// 애매하게 걸쳤다가 내려오는 경우는 충돌처리 안하도록 하기 위한 코드
+					if (Info.Bottom - (float)i > 10.f)
+					{
+						return false;
+					}
+
+					Src->SetHitPoint((float)(j + DestStartPosX), (float)(i + DestStartPosY));
+					Src->SetFloorCollision(true);
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	return Src->GetCamCollision() || Src->GetFloorCollision();
@@ -175,6 +234,7 @@ bool CCollision::CollisionSphereToPixel(CColliderSphere* Src, CColliderPixel* De
 {
 	Src->SetHitPoint(-1.f, -1.f);
 	Dest->SetHitPoint(-1.f, -1.f);
+	Vector2 DestPos = Dest->GetOwner()->GetPos();
 
 	int StartX, EndX;
 	int StartY, EndY;
@@ -184,46 +244,93 @@ bool CCollision::CollisionSphereToPixel(CColliderSphere* Src, CColliderPixel* De
 	RectInfo RcInfo = { Info.Center.x - Info.Radius, Info.Center.y - Info.Radius,
 	Info.Center.x + Info.Radius, Info.Center.y + Info.Radius };
 
-	StartX = RcInfo.Left < 0 ? 0 : (int)RcInfo.Left;
-	EndX = RcInfo.Right > Dest->GetWidth() ? (int)Dest->GetWidth() - 1 : (int)RcInfo.Right;
-
-	StartY = RcInfo.Top < 0 ? 0 : (int)RcInfo.Top;
-	EndY = RcInfo.Bottom > Dest->GetHeight() ? (int)Dest->GetHeight() - 1 : (int)RcInfo.Bottom;
-
-	// 아래 두 멤버는 CCollider의 멤버
-	// 만약 player와 stage 충돌 체크를 위해 stage가 
-	// CollisionRectToPixel를 부르고 m_bFloorCollision을
-	// true로 만들고 그대로 두고 리턴하고
-	// CCollisionManager::Collision(fDeltaTime)에서
-	// 충돌 체크할 다음 element(*iter1)가 Arabian이면
-	// 또 stage가 CollisionRectToPixel를 부를텐데 그때
-	// ColliderPixel의 m_bCamCollision, m_bFloorCollision가
-	// 이미 true일 것이다. 충돌 체크를 하기도 전에 둘중 하나라도
-	// true라는건 충돌 체크에 오류를 발생시킴
-	Src->SetFloorCollision(false);
-	int Width = (int)(Dest->GetWidth());
-
-	for (int i = StartY; i <= EndY; i++)
+	if (Dest->GetOwner()->GetObjType() == EObject_Type::Stage)
 	{
-		for (int j = StartX; j <= EndX; j++)
+		StartX = RcInfo.Left < 0 ? 0 : (int)RcInfo.Left;
+		EndX = RcInfo.Right > Dest->GetWidth() ? (int)Dest->GetWidth() - 1 : (int)RcInfo.Right;
+
+		StartY = RcInfo.Top < 0 ? 0 : (int)RcInfo.Top;
+		EndY = RcInfo.Bottom > Dest->GetHeight() ? (int)Dest->GetHeight() - 1 : (int)RcInfo.Bottom;
+
+		// 아래 두 멤버는 CCollider의 멤버
+		// 만약 player와 stage 충돌 체크를 위해 stage가 
+		// CollisionRectToPixel를 부르고 m_bFloorCollision을
+		// true로 만들고 그대로 두고 리턴하고
+		// CCollisionManager::Collision(fDeltaTime)에서
+		// 충돌 체크할 다음 element(*iter1)가 Arabian이면
+		// 또 stage가 CollisionRectToPixel를 부를텐데 그때
+		// ColliderPixel의 m_bCamCollision, m_bFloorCollision가
+		// 이미 true일 것이다. 충돌 체크를 하기도 전에 둘중 하나라도
+		// true라는건 충돌 체크에 오류를 발생시킴
+		Src->SetFloorCollision(false);
+		int Width = (int)(Dest->GetWidth());
+
+		for (int i = StartY; i <= EndY; i++)
 		{
-			int idx = i * Width + j;
-			const PIXEL& pixel = Dest->GetPixel(idx);
-
-			if (pixel.r == 255 && pixel.g == 0 && pixel.b == 255)
+			for (int j = StartX; j <= EndX; j++)
 			{
-				if (Distance(Vector2((float)j, (float)i), Vector2(Info.Center)) <= Info.Radius)
-				{
-					Src->SetHitPoint((float)j, (float)i);
+				int idx = i * Width + j;
+				const PIXEL& pixel = Dest->GetPixel(idx);
 
-					Src->SetFloorCollision(true);
-					return true;
+				if (pixel.r == 255 && pixel.g == 0 && pixel.b == 255)
+				{
+					if (Distance(Vector2((float)j, (float)i), Vector2(Info.Center)) <= Info.Radius)
+					{
+						Src->SetHitPoint((float)j, (float)i);
+
+						Src->SetFloorCollision(true);
+						return true;
+					}
 				}
 			}
 		}
+
+		return false;
+	}
+
+	else if (Dest->GetOwner()->GetObjType() == EObject_Type::Obstacle)
+	{
+		int DestStartPosX = (int)Dest->GetStartPos().x;
+		int DestStartPosY = (int)Dest->GetStartPos().y;
+
+		RcInfo.Left -= DestStartPosX;
+		RcInfo.Right -= DestStartPosX;
+		RcInfo.Top -= DestStartPosY;
+		RcInfo.Bottom -= DestStartPosY;
+
+		StartX = RcInfo.Left < 0 ? 0 : (int)RcInfo.Left;
+		EndX = RcInfo.Right >= Dest->GetWidth() ? Dest->GetWidth() - 1 : (int)RcInfo.Right;
+
+		StartY = RcInfo.Top < 0 ? 0 : (int)RcInfo.Top;
+		EndY = RcInfo.Bottom >= Dest->GetHeight() ? Dest->GetHeight() - 1 : (int)RcInfo.Bottom;
+
+		Src->SetFloorCollision(false);
+		int Width = (int)(Dest->GetWidth());
+
+		for (int i = StartY; i <= EndY; i++)
+		{
+			for (int j = StartX; j <= EndX; j++)
+			{
+				int idx = i * Width + j;
+				const PIXEL& pixel = Dest->GetPixel(idx);
+
+				if (pixel.r == 255 && pixel.g == 0 && pixel.b == 255)
+				{
+					Vector2 OriginCenter = Info.Center - Vector2((float)DestStartPosX, (float)DestStartPosY);
+					if (Distance(Vector2((float)j, (float)i), OriginCenter) <= Info.Radius)
+					{
+						Src->SetHitPoint((float)(j + DestStartPosX), (float)(i + DestStartPosY));
+
+						Src->SetFloorCollision(true);
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	return false;
-
 }
  

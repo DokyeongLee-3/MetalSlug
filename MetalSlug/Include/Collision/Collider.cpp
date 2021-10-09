@@ -8,8 +8,7 @@ CCollider::CCollider()	:
 	m_Scene(nullptr),
 	m_Owner(nullptr),
 	m_Enable(true),
-	m_Profile(nullptr),
-	m_MouseCollision(false)
+	m_Profile(nullptr)
 {
 }
 
@@ -53,6 +52,20 @@ bool CCollider::CheckCollisionList(CCollider* Collider)
 	for (; iter != iterEnd; ++iter)
 	{
 		if (*iter == Collider)
+			return true;
+	}
+
+	return false;
+}
+
+bool CCollider::CheckCollisionList(const std::string& Name)
+{
+	auto iter = m_CollisionList.begin();
+	auto iterEnd = m_CollisionList.end();
+
+	for (; iter != iterEnd; ++iter)
+	{
+		if ((*iter)->GetName() == Name)
 			return true;
 	}
 

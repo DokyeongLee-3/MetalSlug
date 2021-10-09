@@ -118,7 +118,6 @@ void CTexture::Render(HDC hDC, const Vector2& WindowPos,
 			(int)Size.x, (int)Size.y,
 			m_vecTextureInfo[Index]->ColorKey);
 
-		int a = 3;
 	}
 
 	else

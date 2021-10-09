@@ -159,6 +159,11 @@ public:
 		return m_Pos;
 	}
 
+	Vector2 GetPrevPos()	const
+	{
+		return m_PrevPos;
+	}
+
 	Vector2 GetSize()	const
 	{
 		return m_Size;

@@ -103,6 +103,9 @@
     <Filter Include="03.Object\05.Bomb">
       <UniqueIdentifier>{df8da476-8a3a-4d02-a526-af998dfd8b5a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03.Object\01.Character\01.Monster">
+      <UniqueIdentifier>{30ec72cf-f486-496c-8acf-e876df96d0c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -130,9 +133,6 @@
       <Filter>02.Scene</Filter>
     </ClCompile>
     <ClCompile Include="Object\Character.cpp">
-      <Filter>03.Object\01.Character</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Monster.cpp">
       <Filter>03.Object\01.Character</Filter>
     </ClCompile>
     <ClCompile Include="Object\Player.cpp">
@@ -231,6 +231,12 @@
     <ClCompile Include="Object\Bomb.cpp">
       <Filter>03.Object\05.Bomb</Filter>
     </ClCompile>
+    <ClCompile Include="Object\Arabian.cpp">
+      <Filter>03.Object\01.Character\01.Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Monster.cpp">
+      <Filter>03.Object\01.Character\01.Monster</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameInfo.h">
@@ -261,9 +267,6 @@
       <Filter>02.Scene</Filter>
     </ClInclude>
     <ClInclude Include="Object\Character.h">
-      <Filter>03.Object\01.Character</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Monster.h">
       <Filter>03.Object\01.Character</Filter>
     </ClInclude>
     <ClInclude Include="Object\Player.h">
@@ -394,6 +397,12 @@
     </ClInclude>
     <ClInclude Include="Object\Bomb.h">
       <Filter>03.Object\05.Bomb</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Arabian.h">
+      <Filter>03.Object\01.Character\01.Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Monster.h">
+      <Filter>03.Object\01.Character\01.Monster</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
