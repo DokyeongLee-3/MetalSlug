@@ -59,3 +59,10 @@ enum class EObject_Type
 	Obstacle,
 	Stage
 };
+
+enum class EArabian_State
+{
+	Idle,
+	Trace,
+	Attack
+};

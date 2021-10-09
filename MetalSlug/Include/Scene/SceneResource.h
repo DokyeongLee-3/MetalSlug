@@ -65,6 +65,8 @@ public:
 		const AnimationFrameData& Data);
 	void AddAnimationFrameData(const std::string& SequenceName,
 		float PosX, float PosY, float SizeX, float SizeY);
+	void SetAnimationFrameData(const std::string& SequenceName,
+		const AnimationFrameData& Data, int Index);
 
 	CAnimationSequence* FindAnimationSequence(const std::string& Name);
 

@@ -3,13 +3,20 @@
 #include "../Scene/Scene.h"
 #include "../Collision/ColliderBox.h"
 
-CArabian::CArabian()
+CArabian::CArabian()	:
+	m_DetectDistance(500.f),
+	m_State(EArabian_State::Idle),
+	m_Target(nullptr)
 {
+	m_ObjType = EObject_Type::Character;
 }
 
 CArabian::CArabian(const CArabian& obj)	:
 	CMonster(obj)
 {
+	m_DetectDistance = obj.m_DetectDistance;
+	m_State = EArabian_State::Idle;
+	m_Target = obj.m_Target;
 }
 
 CArabian::~CArabian()

@@ -159,32 +159,32 @@ bool CPlayer::Init()
 	AddBottomAnimation("PlayerCrawlRight", true, 0.8f);
 	AddBottomAnimation("PlayerCrawlLeft", true, 0.8f, 1.f, true);
 
-	AddBottomAnimation("SitDownNormalAttackRight", false, 0.15f);
-	AddBottomAnimation("SitDownNormalAttackLeft", false, 0.15f, 1.f, true);
+	AddBottomAnimation("PlayerSitDownNormalAttackRight", false, 0.15f);
+	AddBottomAnimation("PlayerSitDownNormalAttackLeft", false, 0.15f, 1.f, true);
 
-	AddBottomAnimationNotify<CPlayer>("SitDownNormalAttackRight",
+	AddBottomAnimationNotify<CPlayer>("PlayerSitDownNormalAttackRight",
 		0, this, &CPlayer::CloneBullet);
-	AddBottomAnimationNotify<CPlayer>("SitDownNormalAttackLeft",
+	AddBottomAnimationNotify<CPlayer>("PlayerSitDownNormalAttackLeft",
 		8, this, &CPlayer::CloneBullet);
 
-	AddTopAnimationNotify<CPlayer>("SitDownNormalAttackRight",
+	AddTopAnimationNotify<CPlayer>("PlayerSitDownNormalAttackRight",
 		0, this, &CPlayer::CloneBullet);
-	AddTopAnimationNotify<CPlayer>("SitDownNormalAttackLeft",
+	AddTopAnimationNotify<CPlayer>("PlayerSitDownNormalAttackLeft",
 		9, this, &CPlayer::CloneBullet);
-	SetBottomAnimationEndNotify<CPlayer>("SitDownNormalAttackRight",
+	SetBottomAnimationEndNotify<CPlayer>("PlayerSitDownNormalAttackRight",
 		this, &CPlayer::SitDownBottomAttackEnd);
-	SetBottomAnimationEndNotify<CPlayer>("SitDownNormalAttackLeft",
+	SetBottomAnimationEndNotify<CPlayer>("PlayerSitDownNormalAttackLeft",
 		this, &CPlayer::SitDownBottomAttackEnd);
 
-	AddTopAnimation("BombRightTop", false, 0.3f);
-	AddTopAnimation("BombLeftTop", false, 0.3f, 1.f, true);
-	AddTopAnimationNotify<CPlayer>("BombRightTop",
+	AddTopAnimation("PlayerBombRightTop", false, 0.3f);
+	AddTopAnimation("PlayerBombLeftTop", false, 0.3f, 1.f, true);
+	AddTopAnimationNotify<CPlayer>("PlayerBombRightTop",
 		2, this, &CPlayer::CloneBomb);
-	AddTopAnimationNotify<CPlayer>("BombLeftTop",
+	AddTopAnimationNotify<CPlayer>("PlayerBombLeftTop",
 		2, this, &CPlayer::CloneBomb);
-	SetTopAnimationEndNotify<CPlayer>("BombRightTop",
+	SetTopAnimationEndNotify<CPlayer>("PlayerBombRightTop",
 		this, &CPlayer::BombEnd);
-	SetTopAnimationEndNotify<CPlayer>("BombLeftTop",
+	SetTopAnimationEndNotify<CPlayer>("PlayerBombLeftTop",
 		this, &CPlayer::BombEnd);
 
 	AddBottomAnimation("PlayerSitDownBombRight", false, 0.4f);
@@ -1016,12 +1016,12 @@ void CPlayer::BulletFire(float DeltaTime)
 
 	else if (CurBottom == "PlayerSitDownIdleRight")
 	{
-		ChangeBottomAnimation("SitDownNormalAttackRight");
+		ChangeBottomAnimation("PlayerSitDownNormalAttackRight");
 	}
 
 	else if (CurBottom == "PlayerSitDownIdleLeft")
 	{
-		ChangeBottomAnimation("SitDownNormalAttackLeft");
+		ChangeBottomAnimation("PlayerSitDownNormalAttackLeft");
 	}
 }
 
@@ -1365,12 +1365,12 @@ void CPlayer::Bomb(float DeltaTime)
 	{
 		if (CurTop.find("Right") != std::string::npos)
 		{
-			ChangeTopAnimation("BombRightTop");
+			ChangeTopAnimation("PlayerBombRightTop");
 		}
 
 		else if (CurTop.find("Left") != std::string::npos)
 		{
-			ChangeTopAnimation("BombLeftTop");
+			ChangeTopAnimation("PlayerBombLeftTop");
 		}
 	}
 

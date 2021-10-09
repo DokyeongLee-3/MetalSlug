@@ -43,6 +43,16 @@ public:
 		return (int)m_vecFrameData.size();
 	}
 
+	void SetFrameCount(int FrameCount)
+	{
+		m_vecFrameData.resize((size_t)FrameCount);
+	}
+
+	void SetFrameData(const AnimationFrameData& Data, int Index)
+	{
+		m_vecFrameData[Index] = Data;
+	}
+
 public:
 	// CResourceManager::CreateAnimation에서 CAnimationSequence를 동적할당하고
 	// CAnimationSequence::Init을 호출

@@ -233,6 +233,17 @@ void CSceneResource::AddAnimationFrameData(
 	Sequence->AddFrameData(PosX, PosY, SizeX, SizeY);
 }
 
+void CSceneResource::SetAnimationFrameData(const std::string& SequenceName, 
+	const AnimationFrameData& Data, int Index)
+{
+	CAnimationSequence* Sequence = FindAnimationSequence(SequenceName);
+
+	if (!Sequence)
+		return;
+
+	Sequence->SetFrameData(Data, Index);
+}
+
 CAnimationSequence* CSceneResource::FindAnimationSequence(const std::string& Name)
 {
 	auto iter = m_mapAnimationSequence.find(Name);
