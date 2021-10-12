@@ -44,6 +44,12 @@ private:
 	AnimationInfo* FindInfo(const std::string& Name);
 
 public:
+	AnimationInfo* GetCurrentAnimation()	const
+	{
+		return m_CurrentAnimation;
+	}
+
+public:
 	template <typename T>
 	void SetEndNotify(const std::string& SequenceName,
 		T* Obj, void(T::* Func)())

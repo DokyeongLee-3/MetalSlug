@@ -113,6 +113,8 @@ bool CCollision::CollisionBoxToPixel(CColliderBox* Src,
 	int StartX, EndX;
 	int StartY, EndY;
 
+	CGameObject* Owner = Src->GetOwner();
+
 	RectInfo Info = Src->GetInfo();
 
 	if (Dest->GetOwner()->GetObjType() == EObject_Type::Stage)

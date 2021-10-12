@@ -36,13 +36,6 @@ bool CMonster::Init()
 
 	SetPivot(0.5f, 1.f);
 
-	CreateAnimation();
-	//AddAnimation("LucidNunNaLeftIdle");
-
-	//CColliderBox* Body = AddCollider<CColliderBox>("Body");
-	//Body->SetExtent(82.f, 73.f);
-	//Body->SetOffset(0.f, -36.5f);
-	//Body->SetCollisionProfile("Monster");
 
 	return true;
 }

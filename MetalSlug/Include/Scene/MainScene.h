@@ -23,7 +23,10 @@ private:
 	void LoadBackground();
 	void LoadSound();
 	void LoadPlayerAnimationSequence();
+	void LoadMonsterAnimationSequence();
 	// 밟고 올라갈 수 있는 지형지물을 Load하는 함수
 	void LoadObstacle();
+	
+	void CreateArabian();
 };
 

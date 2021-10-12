@@ -11,6 +11,7 @@
 #include "../Object/Bomb.h"
 #include "../Object/Obstacle.h"
 #include "../Collision/ColliderPixel.h"
+#include "../Object/Arabian.h"
 
 CMainScene::CMainScene()
 {
@@ -24,9 +25,13 @@ CMainScene::~CMainScene()
 bool CMainScene::Init()
 {
 	LoadAnimationSequence();
+	LoadPlayerAnimationSequence();
+	LoadMonsterAnimationSequence();
 	LoadBackground();
 	LoadSound();
 	LoadObstacle();
+
+	CreateArabian();
 
 	GetCamera()->SetWorldResolution(STAGE_WIDTH, STAGE_HEIGHT);
 
@@ -66,13 +71,13 @@ bool CMainScene::Init()
 	
 	SetPlayer(Player);
 
+	CArabian* Arabian1 = (CArabian*)FindObject("Arabian1");
+	Arabian1->SetTarget(Player);
+
 	GetCamera()->SetTarget(Player);
 	// 타겟이 화면 정중앙에 있도록 pivot 설정
 	GetCamera()->SetTargetPivot(0.5f, 0.5f);
 
-
-	//CMonster* Monster = CreateObject<CMonster>("Monster",
-	//	Vector2(1000.f, 100.f));
 
 	//CUIWindow* TestWindow = CreateUIWindow<CUIWindow>("TestWindow");
 
@@ -104,9 +109,6 @@ void CMainScene::LoadAnimationSequence()
 		GetSceneResource()->AddAnimationFrameData("SandyWave",
 			i * 700.f, 0.f, 700.f, 99.f);
 	}
-
-	LoadPlayerAnimationSequence();
-
 
 	GetSceneResource()->CreateAnimationSequence("NormalAttackEffect",
 		"NormalAttackEffect", TEXT("NormalAttackEffect.bmp"));
@@ -277,86 +279,6 @@ void CMainScene::LoadPlayerAnimationSequence()
 	//	{
 	//		fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
 	//		GetSceneResource()->AddAnimationFrameData("PlayerIdleRightTop",
-	//			Data);
-	//		Data = {};
-	//	}
-	//}
-
-	//fclose(FileStream);
-
-
-	//GetSceneResource()->CreateAnimationSequence("PlayerIdleRightBottom",
-	//	"PlayerIdleRightBottom", TEXT("Player/Right/Idle/Marco_IdleBottom.bmp"));
-
-	//GetSceneResource()->SetTextureColorKey("PlayerIdleRightBottom",
-	//	255, 255, 255);
-
-	//fopen_s(&FileStream, "FrameData/PlayerIdleRightBottom.txt", "rt");
-
-	//if (FileStream)
-	//{
-	//	char	Line[128] = {};
-	//	AnimationFrameData Data = {};
-	//	// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
-	//	fgets(Line, 128, FileStream);
-
-	//	for (int i = 0; i < 6; ++i)
-	//	{
-	//		fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
-	//		GetSceneResource()->AddAnimationFrameData("PlayerIdleRightBottom",
-	//			Data);
-	//		Data = {};
-	//	}
-	//}
-
-	//fclose(FileStream);
-
-	//GetSceneResource()->CreateAnimationSequence("PlayerIdleLeftTop",
-	//	"PlayerIdleLeftTop", TEXT("Player/Left/Idle/Marco_IdleTop.bmp"));
-
-	//GetSceneResource()->SetTextureColorKey("PlayerIdleLeftTop",
-	//	255, 255, 255);
-
-	//// 여기서 파일에서 FrameData를 읽어와서 Load해줘야 할듯
-	//fopen_s(&FileStream, "FrameData/PlayerIdleLeftTop.txt", "rt");
-
-	//if (FileStream)
-	//{
-	//	char	Line[128] = {};
-	//	AnimationFrameData Data = {};
-	//	// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
-	//	fgets(Line, 128, FileStream);
-
-	//	for (int i = 0; i < 6; ++i)
-	//	{
-	//		fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
-	//		GetSceneResource()->AddAnimationFrameData("PlayerIdleLeftTop",
-	//			Data);
-	//		Data = {};
-	//	}
-	//}
-
-	//fclose(FileStream);
-
-	//GetSceneResource()->CreateAnimationSequence("PlayerIdleLeftBottom",
-	//	"PlayerIdleLeftBottom", TEXT("Player/Left/Idle/Marco_IdleBottom.bmp"));
-
-	//GetSceneResource()->SetTextureColorKey("PlayerIdleLeftBottom",
-	//	255, 255, 255);
-
-	//fopen_s(&FileStream, "FrameData/PlayerIdleLeftBottom.txt", "rt");
-
-	//if (FileStream)
-	//{
-	//	char	Line[128] = {};
-	//	AnimationFrameData Data = {};
-	//	// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
-	//	fgets(Line, 128, FileStream);
-
-	//	for (int i = 0; i < 6; ++i)
-	//	{
-	//		fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
-	//		GetSceneResource()->AddAnimationFrameData("PlayerIdleLeftBottom",
 	//			Data);
 	//		Data = {};
 	//	}
@@ -766,6 +688,240 @@ void CMainScene::LoadPlayerAnimationSequence()
 	fclose(FileStream);
 }
 
+void CMainScene::LoadMonsterAnimationSequence()
+{
+	FILE* FileStream;
+
+	GetSceneResource()->CreateAnimationSequence("ArabianShuffleRight",
+		"ArabianShuffleRight", TEXT("Monster/Arabian/Shuffle/Right/Arabian_Shuffle.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianShuffleRight",
+		255, 255, 255);
+
+	CAnimationSequence* Sequence = GetSceneResource()->FindAnimationSequence("ArabianShuffleRight");
+	Sequence->SetFrameCount(6);
+
+
+	GetSceneResource()->CreateAnimationSequence("ArabianShuffleLeft",
+		"ArabianShuffleLeft", TEXT("Monster/Arabian/Shuffle/Left/Arabian_Shuffle.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianShuffleLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianShuffleLeft");
+	Sequence->SetFrameCount(6);
+
+	// Turn의 Framedata는 frame수도 적고 간단해서 파일에서 읽지 않고
+	// 직접 값을 넣어준다
+	GetSceneResource()->CreateAnimationSequence("ArabianTurnLeft",
+		"ArabianTurnLeft", TEXT("Monster/Arabian/Turn/Turn.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianTurnLeft",
+		255, 255, 255);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianTurnRight",
+		"ArabianTurnRight", TEXT("Monster/Arabian/Turn/Turn.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianTurnRight",
+		255, 255, 255);
+
+	AnimationFrameData Data = {};
+	Data.StartPos.x = 0;
+	Data.StartPos.y = 0;
+	Data.Size.x = 115.f;
+	Data.Size.y = 135.f;
+	Data.Offset.x = 1;
+	Data.Offset.y = 0;
+
+	GetSceneResource()->AddAnimationFrameData("ArabianTurnLeft", Data);
+	GetSceneResource()->AddAnimationFrameData("ArabianTurnRight", Data);
+
+	Data.StartPos.x = 115.f;
+
+	GetSceneResource()->AddAnimationFrameData("ArabianTurnLeft", Data);
+	GetSceneResource()->AddAnimationFrameData("ArabianTurnRight", Data);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianRunRight",
+		"ArabianRunRight", TEXT("Monster/Arabian/Run/Right/Arabian_Run.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianRunRight",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianRunRight");
+	Sequence->SetFrameCount(12);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianRunLeft",
+		"ArabianRunLeft", TEXT("Monster/Arabian/Run/Left/Arabian_Run.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianRunLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianRunLeft");
+	Sequence->SetFrameCount(12);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianPrepareLeft",
+		"ArabianPrepareLeft", TEXT("Monster/Arabian/Prepare/Left/Prepare.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianPrepareLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianPrepareLeft");
+	Sequence->SetFrameCount(4);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianPrepareRight",
+		"ArabianPrepareRight", TEXT("Monster/Arabian/Prepare/Right/Prepare.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianPrepareRight",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianPrepareRight");
+	Sequence->SetFrameCount(4);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianAttackLeft",
+		"ArabianAttackLeft", TEXT("Monster/Arabian/Attack/Left/ArabianAttack.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianAttackLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianAttackLeft");
+	Sequence->SetFrameCount(7);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianAttackRight",
+		"ArabianAttackRight", TEXT("Monster/Arabian/Attack/Right/ArabianAttack.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianAttackRight",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianAttackRight");
+	Sequence->SetFrameCount(7);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianThrowRight",
+		"ArabianThrowRight", TEXT("Monster/Arabian/Throwing/Right/Throw.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianThrowRight",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianThrowRight");
+	Sequence->SetFrameCount(19);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianThrowLeft",
+		"ArabianThrowLeft", TEXT("Monster/Arabian/Throwing/Left/Throw.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianThrowLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianThrowLeft");
+	Sequence->SetFrameCount(19);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianDeathAnimationRight2",
+		"ArabianDeathAnimationRight2", TEXT("Monster/Arabian/Death/Right/DeathAnimation2.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianDeathAnimationRight2",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianDeathAnimationRight2");
+	Sequence->SetFrameCount(19);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianDeathAnimationLeft2",
+		"ArabianDeathAnimationLeft2", TEXT("Monster/Arabian/Death/Left/DeathAnimation2.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianDeathAnimationLeft2",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianDeathAnimationLeft2");
+	Sequence->SetFrameCount(19);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianDeathAnimationRight1",
+		"ArabianDeathAnimationRight1", TEXT("Monster/Arabian/Death/Right/DeathAnimation1.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianDeathAnimationRight1",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianDeathAnimationRight1");
+	Sequence->SetFrameCount(28);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianDeathAnimationLeft1",
+		"ArabianDeathAnimationLeft1", TEXT("Monster/Arabian/Death/Left/DeathAnimation1.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianDeathAnimationLeft1",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianDeathAnimationLeft1");
+	Sequence->SetFrameCount(28);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianDeathAnimationRight3",
+		"ArabianDeathAnimationRight3", TEXT("Monster/Arabian/Death/Right/DeathAnimation3.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianDeathAnimationRight3",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianDeathAnimationRight3");
+	Sequence->SetFrameCount(13);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianDeathAnimationLeft3",
+		"ArabianDeathAnimationLeft3", TEXT("Monster/Arabian/Death/Left/DeathAnimation3.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianDeathAnimationLeft3",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianDeathAnimationLeft3");
+	Sequence->SetFrameCount(13);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianJumpLeft",
+		"ArabianJumpLeft", TEXT("Monster/Arabian/Jump/Left/Jump.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianJumpLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianJumpLeft");
+	Sequence->SetFrameCount(9);
+
+	GetSceneResource()->CreateAnimationSequence("ArabianJumpRight",
+		"ArabianJumpRight", TEXT("Monster/Arabian/Jump/Right/Jump.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("ArabianJumpRight",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("ArabianJumpRight");
+	Sequence->SetFrameCount(9);
+
+
+	// Arabian의 FrameData 차례대로 읽어오기 
+	fopen_s(&FileStream, "FrameData/ArabianFrameData.fdat", "rb");
+
+	if (FileStream)
+	{
+		fseek(FileStream, 0, SEEK_SET);
+		while (!feof(FileStream))
+		{
+			char	Line[MAX_PATH] = {};
+			int AnimNameLength = -1;
+			AnimationFrameData Data = {};
+
+			fread(&AnimNameLength, sizeof(int), 1, FileStream);
+
+			if (AnimNameLength == -1)
+				break;
+
+			fread(Line, AnimNameLength, sizeof(char), FileStream);
+			std::string AnimName = Line;
+
+			Sequence = GetSceneResource()->FindAnimationSequence(AnimName);
+
+			int FrameCount = Sequence->GetFrameCount();
+
+			for (int i = 0; i < FrameCount; ++i)
+			{
+				fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+				GetSceneResource()->SetAnimationFrameData(AnimName, Data, i);
+				Data = {};
+			}
+		}
+	}
+
+	fclose(FileStream);
+}
+
 void CMainScene::LoadObstacle()
 {
 	GetSceneResource()->LoadTexture("FrontObstacle",
@@ -800,4 +956,10 @@ void CMainScene::LoadObstacle()
 	Pixel->SetExtent((int)480, (int)288);
 	Pixel->SetStartPos(1838.f, 530.f);
 	Pixel->SetCollisionProfile("Obstacle");
+}
+
+void CMainScene::CreateArabian()
+{
+	CSharedPtr<CArabian> Arabian1 = CreateObject<CArabian>("Arabian1",
+		Vector2(1800.f, 500.f), Vector2(160.f, 162.f));
 }

@@ -738,43 +738,6 @@ void CPlayer::MoveLeft(float DeltaTime)
 	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 	std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
 
-	// 위의 Move로 인해서 X방향으로만 이동하기 전에는 바닥과
-	// 충돌중이었으나 X방향으로 이동함으로써 내리막길인 
-	// 바닥과 순간적으로 충돌하지 않으나 아직 바닥과의 충돌함수가
-	// 호출되기 전이라서 m_IsGround는 true로 되어 있어서
-	// Player::Update에서 중력이 작용하는 코드도 이번 프레임에서는
-	// 건너뛴다. 따라서 여기서 추가적으로 중력을 작용하는 코드를 작성해준다
-	// 다만 이걸 따지는 경우는 Player와 Stage 충돌체간에만 따진다
-	// Obstacle은 적용X
-	if (m_IsGround)
-	{
-		CCollider* Bottom = FindCollider("Body");
-		
-		if (Bottom->CheckCollisionList("StagePixel"))
-		{
-			Vector2 HitPoint = Bottom->GetHitPoint();
-			Vector2 Offset = Bottom->GetOffset();
-
-			float Width = ((CColliderBox*)Bottom)->GetWidth();
-			float Height = ((CColliderBox*)Bottom)->GetHeight();
-
-			RectInfo Rect;
-			Rect.Left = m_Pos.x - Width / 2.f + Offset.x;
-			Rect.Top = m_Pos.y - Height / 2.f + Offset.y;
-			Rect.Right = m_Pos.x + Width / 2.f + Offset.x;
-			Rect.Bottom = m_Pos.y + Height / 2.f + Offset.y;
-
-			((CColliderBox*)Bottom)->SetInfo(Rect);
-
-			if (Rect.Left > HitPoint.x || Rect.Right < HitPoint.x)
-			{
-				m_FallTime += DeltaTime * m_GravityAccel * 30;
-
-				m_Pos.y += 0.5f * GRAVITY * m_FallTime;
-			}
-		}
-	}
-
 	// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
 	if (!m_Jump)
 	{
@@ -832,12 +795,6 @@ void CPlayer::MoveLeft(float DeltaTime)
 		Move(Vector2(-1.f, 0.f));
 	}
 
-}
-
-void CPlayer::MoveRight(float DeltaTime)
-{
-	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
-	std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
 
 	// 위의 Move로 인해서 X방향으로만 이동하기 전에는 바닥과
 	// 충돌중이었으나 X방향으로 이동함으로써 내리막길인 
@@ -867,9 +824,7 @@ void CPlayer::MoveRight(float DeltaTime)
 
 			((CColliderBox*)Bottom)->SetInfo(Rect);
 
-			float MidPoint = (Rect.Left + Rect.Right) / 2;
-
-			if (MidPoint - ((CColliderBox*)Bottom)->GetWidth() / 2 > HitPoint.x)
+			if (Rect.Left > HitPoint.x || Rect.Right < HitPoint.x)
 			{
 				m_FallTime += DeltaTime * m_GravityAccel * 30;
 
@@ -877,6 +832,12 @@ void CPlayer::MoveRight(float DeltaTime)
 			}
 		}
 	}
+}
+
+void CPlayer::MoveRight(float DeltaTime)
+{
+	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+	std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
 
 	// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
 	if (!m_Jump)
@@ -931,6 +892,46 @@ void CPlayer::MoveRight(float DeltaTime)
 		}
 		Move(Vector2(1.f, 0.f));
 	}
+
+	// 위의 Move로 인해서 X방향으로만 이동하기 전에는 바닥과
+	// 충돌중이었으나 X방향으로 이동함으로써 내리막길인 
+	// 바닥과 순간적으로 충돌하지 않으나 아직 바닥과의 충돌함수가
+	// 호출되기 전이라서 m_IsGround는 true로 되어 있어서
+	// Player::Update에서 중력이 작용하는 코드도 이번 프레임에서는
+	// 건너뛴다. 따라서 여기서 추가적으로 중력을 작용하는 코드를 작성해준다
+	// 다만 이걸 따지는 경우는 Player와 Stage 충돌체간에만 따진다
+	// Obstacle은 적용X
+	if (m_IsGround)
+	{
+		CCollider* Bottom = FindCollider("Body");
+
+		if (Bottom->CheckCollisionList("StagePixel"))
+		{
+			Vector2 HitPoint = Bottom->GetHitPoint();
+			Vector2 Offset = Bottom->GetOffset();
+
+			float Width = ((CColliderBox*)Bottom)->GetWidth();
+			float Height = ((CColliderBox*)Bottom)->GetHeight();
+
+			RectInfo Rect;
+			Rect.Left = m_Pos.x - Width / 2.f + Offset.x;
+			Rect.Top = m_Pos.y - Height / 2.f + Offset.y;
+			Rect.Right = m_Pos.x + Width / 2.f + Offset.x;
+			Rect.Bottom = m_Pos.y + Height / 2.f + Offset.y;
+
+			((CColliderBox*)Bottom)->SetInfo(Rect);
+
+			float MidPoint = (Rect.Left + Rect.Right) / 2;
+
+			if (MidPoint - ((CColliderBox*)Bottom)->GetWidth() / 2 > HitPoint.x)
+			{
+				m_FallTime += DeltaTime * m_GravityAccel * 30;
+
+				m_Pos.y += 0.5f * GRAVITY * m_FallTime;
+			}
+		}
+	}
+
 }
 
 void CPlayer::BulletFire(float DeltaTime)
@@ -1627,7 +1628,12 @@ void CPlayer::CollisionStay(CCollider* Src, CCollider* Dest, float DeltaTime)
 
 void CPlayer::CollisionEnd(CCollider* Src, CCollider* Dest, float DeltaTime)
 {
-	if ((Dest->GetName() == "BackObstaclePixel") ||
+	if (Dest->GetName() == "StagePixel")
+	{
+		m_IsGround = false;
+	}
+
+	else if ((Dest->GetName() == "BackObstaclePixel") ||
 		(Dest->GetName() == "FrontObstaclePixel"))
 	{
 		m_IsGround = false;

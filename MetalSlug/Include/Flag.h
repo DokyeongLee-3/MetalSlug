@@ -62,7 +62,7 @@ enum class EObject_Type
 
 enum class EArabian_State
 {
-	Idle,
+	Shuffle,
 	Trace,
 	Attack
 };
