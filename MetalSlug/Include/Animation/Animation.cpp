@@ -26,7 +26,15 @@ CAnimation::CAnimation(const CAnimation& Anim)
 		Info->PlayTime = iter->second->PlayTime;
 		Info->PlayScale = iter->second->PlayScale;
 		Info->Loop = iter->second->Loop;
-		Info->Reverse = iter->second->Loop;
+		Info->Reverse = iter->second->Reverse;
+		Info->EndFunction = iter->second->EndFunction;
+
+		size_t Size = iter->second->vecNotify.size();
+
+		for (int i = 0; i < (int)Size; ++i)
+		{
+			Info->vecNotify[i] = iter->second->vecNotify[i];
+		}
 
 		// Anim이 갖고 있는 여러개의 Sequence중에
 		// Anim의 현재 애니메이션을 나의 현재 애니메이션으로 설정

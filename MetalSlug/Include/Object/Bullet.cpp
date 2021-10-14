@@ -27,11 +27,19 @@ CBullet::~CBullet()
 
 }
 
+void CBullet::SetColliderProfile(const std::string& ColliderName,
+	const std::string& ProfileName)
+{
+	CCollider* Body = FindCollider(ColliderName);
+
+	Body->SetCollisionProfile(ProfileName);
+}
+
 void CBullet::Start()
 {
 	CGameObject::Start();
 
-	CCollider* Body = FindCollider("Body");
+	CCollider* Body = FindCollider("BulletBody");
 
 	Body->SetCollisionBeginFunction<CBullet>(this,
 		&CBullet::CollisionBegin);
@@ -59,7 +67,7 @@ bool CBullet::Init()
 	// Collider를 만들어줬고 Scene의 m_Prototype에 있는
 	// Prototype을 복사해서 쓸 것이므로 아래 설정 필요x
 
-	CColliderSphere* Body = AddCollider<CColliderSphere>("Body");
+	CColliderSphere* Body = AddCollider<CColliderSphere>("BulletBody");
 	Body->SetRadius(8.f);
 	Body->SetOffset(0.f, 0.f);
 
@@ -107,6 +115,12 @@ CBullet* CBullet::Clone()
 void CBullet::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 {
 	Destroy();
+
+	// Arabian에 총알이 맞은경우엔 Effect 생성 x
+	if (Dest->GetOwner()->GetName().find("Arabian") != std::string::npos)
+	{
+		return;
+	}
 
 	int Random = rand() % 10;
 	int Sign = rand() % 2;

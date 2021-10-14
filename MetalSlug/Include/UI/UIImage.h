@@ -14,7 +14,9 @@ public:
 protected:
     CSharedPtr<CTexture>    m_Texture;
     CAnimation* m_Animation;
-
+    std::vector<AnimationFrameData> m_vecFrameData;
+    int m_FrameIndex;
+    Vector2 m_Offset;
 
 public:
     void CreateAnimation();
@@ -53,6 +55,7 @@ public:
     virtual void PostUpdate(float DeltaTime);
     virtual void Collision(float DeltaTime);
     virtual void Render(HDC hDC);
+    virtual void Render(const Vector2& Pos, HDC hDC);
 
 public:
     template <typename T>

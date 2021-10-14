@@ -168,6 +168,7 @@
     <ClCompile Include="Object\Character.cpp" />
     <ClCompile Include="Object\EffectHit.cpp" />
     <ClCompile Include="Object\GameObject.cpp" />
+    <ClCompile Include="Object\Knife.cpp" />
     <ClCompile Include="Object\Monster.cpp" />
     <ClCompile Include="Object\Obstacle.cpp" />
     <ClCompile Include="Object\Player.cpp" />
@@ -188,7 +189,9 @@
     <ClCompile Include="Scene\StartScene.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UI\Button.cpp" />
+    <ClCompile Include="UI\NumberWidget.cpp" />
     <ClCompile Include="UI\UIImage.cpp" />
+    <ClCompile Include="UI\UIMain.cpp" />
     <ClCompile Include="UI\UISelect.cpp" />
     <ClCompile Include="UI\UIStart.cpp" />
     <ClCompile Include="UI\UIWidget.cpp" />
@@ -222,6 +225,7 @@
     <ClInclude Include="Object\Character.h" />
     <ClInclude Include="Object\EffectHit.h" />
     <ClInclude Include="Object\GameObject.h" />
+    <ClInclude Include="Object\Knife.h" />
     <ClInclude Include="Object\Monster.h" />
     <ClInclude Include="Object\Obstacle.h" />
     <ClInclude Include="Object\Player.h" />
@@ -245,7 +249,9 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Flag.h" />
     <ClInclude Include="UI\Button.h" />
+    <ClInclude Include="UI\NumberWidget.h" />
     <ClInclude Include="UI\UIImage.h" />
+    <ClInclude Include="UI\UIMain.h" />
     <ClInclude Include="UI\UISelect.h" />
     <ClInclude Include="UI\UIStart.h" />
     <ClInclude Include="UI\UIWidget.h" />

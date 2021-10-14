@@ -39,6 +39,7 @@ protected:
 	// 카메라 영역 밖에 있다면 true
 	bool		m_CameraCull;
 	bool		m_Start;
+	bool		m_BeforeRender;
 	EObject_Type	m_ObjType;
 
 	float		m_LifeTime;

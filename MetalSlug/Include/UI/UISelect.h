@@ -25,5 +25,8 @@ public:
 
 public:
     void PlayCharacterSelectBGM();
+
+private:
+    void IncreaseCredit(float DeltaTime);
 };
 

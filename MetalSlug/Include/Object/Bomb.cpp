@@ -18,7 +18,6 @@ CBomb::CBomb(const CBomb& obj)	:
 	CGameObject(obj)
 {
 	m_Dir = obj.m_Dir;
-	m_ForceXDir = obj.m_ForceXDir;
 	m_CollisionCount = obj.m_CollisionCount;
 	m_ForceXDir = obj.m_ForceXDir;
 	m_ForceYDir = obj.m_ForceYDir;
@@ -137,5 +136,13 @@ void CBomb::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 				m_Pos + Vector2(0.f, -135.f), Vector2(150.f,311.f));
 			Destroy();
 		}
+	}
+
+	else if (DestName.find("Arabian") != std::string::npos)
+	{
+		CEffectHit* Hit = m_Scene->CreateObject<CEffectHit>(
+			"BombExplosionEffect", "BombExplosionEffect",
+			m_Pos + Vector2(0.f, -135.f), Vector2(150.f, 311.f));
+		Destroy();
 	}
 }

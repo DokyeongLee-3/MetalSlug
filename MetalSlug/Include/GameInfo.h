@@ -6,6 +6,7 @@
 
 #include <list>
 #include <vector>
+#include <stack>
 #include <functional>
 #include <unordered_map>
 #include <crtdbg.h>

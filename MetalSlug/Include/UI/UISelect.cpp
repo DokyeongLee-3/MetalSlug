@@ -1,6 +1,7 @@
 
 #include "UISelect.h"
 #include "UIImage.h"
+#include "NumberWidget.h"
 #include "../Scene/SelectScene.h"
 #include "../Scene/SceneManager.h"
 #include "../Scene/SceneResource.h"
@@ -22,6 +23,35 @@ bool CUISelect::Init()
 	Resolution	RS = CGameManager::GetInst()->GetResolution();
 
 	CUIImage* SelectBackground = CreateWidget<CUIImage>("SelectBackground");
+
+	CUIImage* Credits = CreateWidget<CUIImage>("Credits");
+	CNumberWidget* CreditNumber = CreateWidget<CNumberWidget>("CreditNumber");
+
+	std::vector<std::wstring> vecNumberFileName;
+
+	for (int i = 0; i < 10; ++i)
+	{
+		TCHAR FileName[256] = {};
+
+		wsprintf(FileName, TEXT("Font/%d.bmp"), i);
+
+		vecNumberFileName.push_back(FileName);
+	}
+
+	CreditNumber->SetTexture("Number", vecNumberFileName);
+	CreditNumber->SetNumber(CGameManager::GetInst()->GetPlayerCredit());
+	CreditNumber->SetPos(Vector2(860.f, 703.f));
+	CreditNumber->SetZOrder(3);
+
+	for (int i = 0; i < 10; ++i)
+	{
+		CreditNumber->SetTextureColorKey(0, 255, 0, i);
+	}
+
+	Credits->SetTexture("Credits", TEXT("Font/CREDITS.bmp"));
+	Credits->SetTextureColorKey(0, 255, 0);
+	Credits->SetPos(650.f, 700.f);
+	Credits->SetZOrder(3);
 
 	SelectBackground->CreateAnimation();
 	SelectBackground->AddAnimation("SelectSceneDarkness", false,
@@ -54,6 +84,9 @@ bool CUISelect::Init()
 
 void CUISelect::Start()
 {
+	CInput::GetInst()->SetCallback<CUISelect>("SceneChange", 
+		KeyState_Down, this, &CUISelect::IncreaseCredit);
+
 	CUIWindow::Start();
 }
 
@@ -89,7 +122,7 @@ void CUISelect::PauseAnimation()
 
 void CUISelect::FaceBlinkAnimation(float DeltaTime)
 {
-	CInput::GetInst()->ClearCallback();
+	//CInput::GetInst()->ClearCallback();
 	CUIImage* Background = FindWidget<CUIImage>("SelectBackground");
 
 	Background->ChangeAnimation("FaceBlinkAnimation");
@@ -137,4 +170,21 @@ void CUISelect::PlayCharacterSelectBGM()
 {
 	GetScene()->GetSceneResource()->SetVolume("BGM", 40);
 	GetScene()->GetSceneResource()->SoundPlay("CharacterSelectBGM");
+}
+
+void CUISelect::IncreaseCredit(float DeltaTime)
+{
+	int PlayerCredit = CGameManager::GetInst()->GetPlayerCredit();
+
+	if (PlayerCredit == 9)
+		return;
+
+	CGameManager::GetInst()->SetPlayerCredit(++PlayerCredit);
+
+	CNumberWidget* PlayerCreditWidget = FindWidget<CNumberWidget>("CreditNumber");
+
+	PlayerCredit = CGameManager::GetInst()->GetPlayerCredit();
+
+	PlayerCreditWidget->SetNumber(PlayerCredit);
+	GetScene()->GetSceneResource()->SoundPlay("CoinSound");
 }

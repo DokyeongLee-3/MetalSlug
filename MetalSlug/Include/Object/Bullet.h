@@ -38,6 +38,9 @@ public:
         m_Distance = Distance;
     }
 
+    void SetColliderProfile(const std::string& ColliderName,
+        const std::string& ProfileName);
+
 public:
     virtual void Start();
     virtual bool Init();

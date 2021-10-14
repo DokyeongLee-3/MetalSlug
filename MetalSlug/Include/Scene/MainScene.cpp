@@ -6,12 +6,14 @@
 #include "Camera.h"
 #include "../UI/UIWindow.h"
 #include "../UI/UIImage.h"
+#include "../UI/UIMain.h"
 #include "../Object/Stage.h"
 #include "../Object/Background.h"
 #include "../Object/Bomb.h"
 #include "../Object/Obstacle.h"
 #include "../Collision/ColliderPixel.h"
 #include "../Object/Arabian.h"
+#include "../Object/Knife.h"
 
 CMainScene::CMainScene()
 {
@@ -31,6 +33,12 @@ bool CMainScene::Init()
 	LoadSound();
 	LoadObstacle();
 
+	CUIMain* MainWindow = CreateUIWindow<CUIMain>("MainWindow");
+
+	CPlayer* Player = CreateObject<CPlayer>("Player", Vector2(100.f, 500.f));
+
+	SetPlayer(Player);
+
 	CreateArabian();
 
 	GetCamera()->SetWorldResolution(STAGE_WIDTH, STAGE_HEIGHT);
@@ -47,6 +55,7 @@ bool CMainScene::Init()
 	// 따라서 MonsterBullet이라는 prototype에도 이미 Collider가 존재
 	CBullet* PlayerBullet = CreatePrototype<CBullet>("PlayerBullet");
 	CBomb* Bomb = CreatePrototype<CBomb>("PlayerBomb");
+	CKnife* Knife = CreatePrototype<CKnife>("ArabianKnife");
 
 	CCollider* Collider = PlayerBullet->FindCollider("Body");
 
@@ -67,12 +76,8 @@ bool CMainScene::Init()
 	//if (Collider)
 	//	Collider->SetCollisionProfile("MonsterAttack");
 
-	CPlayer* Player = CreateObject<CPlayer>("Player", Vector2(100.f, 500.f));
-	
-	SetPlayer(Player);
-
 	CArabian* Arabian1 = (CArabian*)FindObject("Arabian1");
-	Arabian1->SetTarget(Player);
+	CArabian* Arabian2 = (CArabian*)FindObject("Arabian2");
 
 	GetCamera()->SetTarget(Player);
 	// 타겟이 화면 정중앙에 있도록 pivot 설정
@@ -135,16 +140,6 @@ void CMainScene::LoadAnimationSequence()
 
 	fclose(FileStream);
 
-	GetSceneResource()->CreateAnimationSequence("Blank",
-		"Blank", TEXT("Player/Blank.bmp"));
-
-	GetSceneResource()->SetTextureColorKey("Blank",
-		255, 255, 255);
-
-	GetSceneResource()->AddAnimationFrameData("Blank",
-		0.f, 0.f, 100.f, 68.f);
-
-
 	GetSceneResource()->CreateAnimationSequence("BombRight",
 		"BombRight", TEXT("Item/Bomb/Right/Bomb.bmp"));
 
@@ -187,6 +182,52 @@ void CMainScene::LoadAnimationSequence()
 		{
 			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
 			GetSceneResource()->AddAnimationFrameData("BombExplosionEffect", Data);
+			Data = {};
+		}
+	}
+
+	GetSceneResource()->CreateAnimationSequence("KnifeRight",
+		"KnifeRight", TEXT("Monster/Arabian/Knife/Right/ArabianKnife.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("KnifeRight",
+		255, 255, 255);
+
+	fopen_s(&FileStream, "FrameData/KnifeRotateRight.fdat", "rb");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 18; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("KnifeRight", Data);
+			Data = {};
+		}
+	}
+
+	GetSceneResource()->CreateAnimationSequence("KnifeLeft",
+		"KnifeLeft", TEXT("Monster/Arabian/Knife/Left/ArabianKnife.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("KnifeLeft",
+		255, 255, 255);
+
+	fopen_s(&FileStream, "FrameData/KnifeRotateLeft.fdat", "rb");
+
+	if (FileStream)
+	{
+		char	Line[128] = {};
+		AnimationFrameData Data = {};
+		// fgets 함수는 \n을 만나게 되면 거기까지만 읽어오게 된다.
+		fgets(Line, 128, FileStream);
+
+		for (int i = 0; i < 18; ++i)
+		{
+			fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+			GetSceneResource()->AddAnimationFrameData("KnifeLeft", Data);
 			Data = {};
 		}
 	}
@@ -253,6 +294,9 @@ void CMainScene::LoadSound()
 	GetSceneResource()->LoadSound("Effect", false, "NormalAttack",
 		"NormalAttackSound.wav");
 	GetSceneResource()->SetVolume("Effect", 60);
+
+	GetSceneResource()->LoadSound("UI", false, "CoinSound",
+		"coin-sound.wav");
 }
 
 void CMainScene::LoadPlayerAnimationSequence()
@@ -639,6 +683,36 @@ void CMainScene::LoadPlayerAnimationSequence()
 	Sequence = GetSceneResource()->FindAnimationSequence("PlayerSitDownBombLeft");
 	Sequence->SetFrameCount(4);
 
+	GetSceneResource()->CreateAnimationSequence("PlayerDeathRight",
+		"PlayerDeathRight", TEXT("Player/Right/Death/PlayerDeath.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerDeathRight",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("PlayerDeathRight");
+	Sequence->SetFrameCount(29);
+
+	GetSceneResource()->CreateAnimationSequence("PlayerDeathLeft",
+		"PlayerDeathLeft", TEXT("Player/Left/Death/PlayerDeath.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("PlayerDeathLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("PlayerDeathLeft");
+	Sequence->SetFrameCount(29);
+
+	// PlayerDeath애니메이션은 상하체가 합쳐져 있기 때문에 Framedata를 만드는
+	// 툴에서 어쩔 수 없이 blank 애니메이션을 넣어줘서 파일을 써서
+	// 여기서도 쓰진 않지만 blank 애니메이션을 읽어오기 위해서 여기서 생성해주기만 한다
+	GetSceneResource()->CreateAnimationSequence("Blank",
+		"Blank", TEXT("Player/Blank.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("Blank",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("Blank");
+	Sequence->SetFrameCount(1);
+
 	// Player의 FrameData 차례대로 읽어오기 
 	fopen_s(&FileStream, "FrameData/PlayerFrameData.fdat", "rb");
 
@@ -659,7 +733,8 @@ void CMainScene::LoadPlayerAnimationSequence()
 			fread(Line, AnimNameLength, sizeof(char), FileStream);
 			std::string AnimName = Line;
 
-			if (AnimName[AnimName.length() - 1] == '1' ||
+
+			while (AnimName[AnimName.length() - 1] == '1' ||
 				AnimName[AnimName.length() - 1] == '2' ||
 				AnimName[AnimName.length() - 1] == '3' ||
 				AnimName[AnimName.length() - 1] == '4' ||
@@ -699,7 +774,7 @@ void CMainScene::LoadMonsterAnimationSequence()
 		255, 255, 255);
 
 	CAnimationSequence* Sequence = GetSceneResource()->FindAnimationSequence("ArabianShuffleRight");
-	Sequence->SetFrameCount(6);
+	Sequence->SetFrameCount(12);
 
 
 	GetSceneResource()->CreateAnimationSequence("ArabianShuffleLeft",
@@ -709,7 +784,8 @@ void CMainScene::LoadMonsterAnimationSequence()
 		255, 255, 255);
 
 	Sequence = GetSceneResource()->FindAnimationSequence("ArabianShuffleLeft");
-	Sequence->SetFrameCount(6);
+	Sequence->SetFrameCount(12);
+
 
 	// Turn의 Framedata는 frame수도 적고 간단해서 파일에서 읽지 않고
 	// 직접 값을 넣어준다
@@ -961,5 +1037,21 @@ void CMainScene::LoadObstacle()
 void CMainScene::CreateArabian()
 {
 	CSharedPtr<CArabian> Arabian1 = CreateObject<CArabian>("Arabian1",
-		Vector2(1800.f, 500.f), Vector2(160.f, 162.f));
+		Vector2(1200.f, 500.f), Vector2(160.f, 162.f));
+
+	CSharedPtr<CArabian> Arabian2 = CreateObject<CArabian>("Arabian2",
+		Vector2(1300.f, 500.f), Vector2(160.f, 162.f));
+
+	Arabian2->SetThrowDistance(500.f);
+}
+
+void CMainScene::GenArabian1()
+{
+	CSharedPtr<CArabian> Arabian3 = CreateObject<CArabian>("Arabian3",
+		Vector2(2200.f, 300.f), Vector2(160.f, 162.f));
+	Arabian3->SetThrowDistance(500.f);
+}
+
+void CMainScene::GenArabian2()
+{
 }

@@ -2,19 +2,22 @@
 #include "Player.h"
 #include "../GameManager.h"
 #include "../Scene/Scene.h"
+#include "../Scene/MainScene.h"
 #include "../Input.h"
 #include "../Collision/ColliderBox.h"
 #include "../Collision/ColliderSphere.h"
 #include "../Scene/SceneCollision.h"
 #include "../Scene/Camera.h"
 #include "../Scene/SceneResource.h"
+#include "../UI/UIMain.h"
 
 CPlayer::CPlayer() :
 	m_TopAnimation(nullptr),
 	m_BottomAnimation(nullptr),
 	m_SitDown(false),
-	m_BeforeRender(true),
-	m_ObstacleFall(false)
+	m_ObstacleFall(false),
+	m_Credits(1),
+	m_Death(false)
 {
 }
 
@@ -152,7 +155,6 @@ bool CPlayer::Init()
 	AddTopAnimation("PlayerFrontJumpLeftTop", false, 0.7f, 1.f, true);
 	AddBottomAnimation("PlayerFrontJumpLeftBottom", false, 0.7f, 1.f, true);
 
-	AddTopAnimation("Blank", false, 0.8f);
 	AddBottomAnimation("PlayerSitDownIdleRight", true, 0.8f);
 	AddBottomAnimation("PlayerSitDownIdleLeft", true, 0.8f, 1.f, true);
 
@@ -198,10 +200,22 @@ bool CPlayer::Init()
 	SetBottomAnimationEndNotify<CPlayer>("PlayerSitDownBombLeft",
 		this, &CPlayer::SitDownBombEnd);
 
+	AddTopAnimation("Blank", false, 1.f);
+	AddBottomAnimation("PlayerDeathRight", false, 1.5f);
+	AddBottomAnimation("PlayerDeathLeft", false, 1.5f, 1.f, true);
+	SetBottomAnimationEndNotify<CPlayer>("PlayerDeathRight",
+		this, &CPlayer::Respawn);
+	SetBottomAnimationEndNotify<CPlayer>("PlayerDeathLeft",
+		this, &CPlayer::Respawn);
+
+
 	CColliderSphere* Head = AddCollider<CColliderSphere>("Head");
 	Head->SetRadius(25.f);
 	Head->SetOffset(0.f, -75.f);
 	Head->SetCollisionProfile("Player");
+	Head->SetCollisionBeginFunction<CPlayer>(this, &CPlayer::CollisionBegin);
+	Head->SetCollisionStayFunction<CPlayer>(this, &CPlayer::CollisionStay);
+	Head->SetCollisionEndFunction<CPlayer>(this, &CPlayer::CollisionEnd);
 
 	CColliderBox* Body = AddCollider<CColliderBox>("Body");
 	Body->SetExtent(65.f, 45.f);
@@ -617,8 +631,8 @@ CPlayer* CPlayer::Clone()
 
 void CPlayer::Jump(float DeltaTime)
 {
-	// 자유낙하중에 점프 불가능
-	if (m_FallTime != 0.f)
+	// 자유낙하중이거나 죽는 애니메이션중 점프 불가능
+	if (m_FallTime != 0.f || m_Death)
 		return;
 
 	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
@@ -647,6 +661,7 @@ void CPlayer::Jump(float DeltaTime)
 		
 		m_SitDown = false;
 		m_MoveSpeed = 400.f;
+		m_Jump = true;
 	}
 }
 
@@ -735,100 +750,102 @@ void CPlayer::LookUp(float DeltaTime)
 
 void CPlayer::MoveLeft(float DeltaTime)
 {
-	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
-	std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
-
-	// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
-	if (!m_Jump)
+	if (!m_Death)
 	{
-		// 앉아있는 중에 왼쪽 이동키가 들어오면 왼쪽으로 기어가기
-		if (m_SitDown)
-		{
-			ChangeTopAnimation("Blank");
-			ChangeBottomAnimation("PlayerCrawlLeft");
-			m_MoveSpeed = 150.f;
+		std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+		std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
 
-			Move(Vector2(-1.f, 0.f));
+		// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
+		if (!m_Jump)
+		{
+			// 앉아있는 중에 왼쪽 이동키가 들어오면 왼쪽으로 기어가기
+			if (m_SitDown)
+			{
+				ChangeTopAnimation("Blank");
+				ChangeBottomAnimation("PlayerCrawlLeft");
+				m_MoveSpeed = 150.f;
+
+				Move(Vector2(-1.f, 0.f));
+			}
+
+			else
+			{
+				// 총을 쏘거나 폭탄을 던지는 도중에 캔슬하고
+				// 움직이지 않도록 한다
+				// VerticalJump중일때도 바꾸면 안되는 이유는
+				// Obstacle에서 떨어질 때 VerticalJump 애니메이션으로
+				// 전환되는데 그때 RunRight로 전환해버리면
+				// PostUpdate에서 Idle로 전환되어버릴 수 있다.
+				if (CurTop.find("NormalFire") == std::string::npos
+					&& CurTop.find("Bomb") == std::string::npos
+					&& CurTop.find("VerticalJump") == std::string::npos)
+				{
+					ChangeTopAnimation("PlayerRunLeftTop");
+				}
+
+				if (CurTop.find("NormalFireRight") != std::string::npos ||
+					CurTop.find("BombRight") != std::string::npos ||
+					CurTop.find("VerticalJump") != std::string::npos)
+					return;
+
+				ChangeBottomAnimation("PlayerRunLeftBottom");
+				m_MoveSpeed = 400.f;
+				Move(Vector2(-1.f, 0.f));
+
+			}
 		}
 
+		// 점프중이라면 FrontJump 애니메이션으로 전환
 		else
 		{
-			// 총을 쏘거나 폭탄을 던지는 도중에 캔슬하고
-			// 움직이지 않도록 한다
-			// VerticalJump중일때도 바꾸면 안되는 이유는
-			// Obstacle에서 떨어질 때 VerticalJump 애니메이션으로
-			// 전환되는데 그때 RunRight로 전환해버리면
-			// PostUpdate에서 Idle로 전환되어버릴 수 있다.
-			if (CurTop.find("NormalFire") == std::string::npos
-				&& CurTop.find("Bomb") == std::string::npos 
-				&& CurTop.find("VerticalJump") == std::string::npos)
+			// 만약 FrontJumpRight중인데 왼쪽 방향키가 들어오면
+			// 애니메이션 FrontJumpLeft로 전환하지 않는다
+			// 점프하면서 Fire하거나 폭탄 던지고 있는 중이라도 
+			// FrontJumpLeft로 변환하지 않는다
+			if (CurTop.find("FrontJumpRight") == std::string::npos &&
+				CurTop.find("PlayerNormalFireLeftTop") == std::string::npos &&
+				CurTop.find("BombLeftTop") == std::string::npos)
 			{
-				ChangeTopAnimation("PlayerRunLeftTop");
+				ChangeTopAnimation("PlayerFrontJumpLeftTop");
+				ChangeBottomAnimation("PlayerFrontJumpLeftBottom");
 			}
-			
-			if (CurTop.find("NormalFireRight") != std::string::npos ||
-				CurTop.find("BombRight") != std::string::npos ||
-				CurTop.find("VerticalJump") != std::string::npos)
-				return;
-
-			ChangeBottomAnimation("PlayerRunLeftBottom");
-			m_MoveSpeed = 400.f;
 			Move(Vector2(-1.f, 0.f));
-
 		}
-	}
 
-	// 점프중이라면 FrontJump 애니메이션으로 전환
-	else
-	{
-		// 만약 FrontJumpRight중인데 왼쪽 방향키가 들어오면
-		// 애니메이션 FrontJumpLeft로 전환하지 않는다
-		// 점프하면서 Fire하거나 폭탄 던지고 있는 중이라도 
-		// FrontJumpLeft로 변환하지 않는다
-		if (CurTop.find("FrontJumpRight") == std::string::npos &&
-			CurTop.find("PlayerNormalFireLeftTop") == std::string::npos &&
-			CurTop.find("BombLeftTop") == std::string::npos)
+		// 위의 Move로 인해서 X방향으로만 이동하기 전에는 바닥과
+		// 충돌중이었으나 X방향으로 이동함으로써 내리막길인 
+		// 바닥과 순간적으로 충돌하지 않으나 아직 바닥과의 충돌함수가
+		// 호출되기 전이라서 m_IsGround는 true로 되어 있어서
+		// Player::Update에서 중력이 작용하는 코드도 이번 프레임에서는
+		// 건너뛴다. 따라서 여기서 추가적으로 중력을 작용하는 코드를 작성해준다
+		// 다만 이걸 따지는 경우는 Player와 Stage 충돌체간에만 따진다
+		// Obstacle은 적용X
+		if (m_IsGround)
 		{
-			ChangeTopAnimation("PlayerFrontJumpLeftTop");
-			ChangeBottomAnimation("PlayerFrontJumpLeftBottom");
-		}
-		Move(Vector2(-1.f, 0.f));
-	}
+			CCollider* Bottom = FindCollider("Body");
 
-
-	// 위의 Move로 인해서 X방향으로만 이동하기 전에는 바닥과
-	// 충돌중이었으나 X방향으로 이동함으로써 내리막길인 
-	// 바닥과 순간적으로 충돌하지 않으나 아직 바닥과의 충돌함수가
-	// 호출되기 전이라서 m_IsGround는 true로 되어 있어서
-	// Player::Update에서 중력이 작용하는 코드도 이번 프레임에서는
-	// 건너뛴다. 따라서 여기서 추가적으로 중력을 작용하는 코드를 작성해준다
-	// 다만 이걸 따지는 경우는 Player와 Stage 충돌체간에만 따진다
-	// Obstacle은 적용X
-	if (m_IsGround)
-	{
-		CCollider* Bottom = FindCollider("Body");
-
-		if (Bottom->CheckCollisionList("StagePixel"))
-		{
-			Vector2 HitPoint = Bottom->GetHitPoint();
-			Vector2 Offset = Bottom->GetOffset();
-
-			float Width = ((CColliderBox*)Bottom)->GetWidth();
-			float Height = ((CColliderBox*)Bottom)->GetHeight();
-
-			RectInfo Rect;
-			Rect.Left = m_Pos.x - Width / 2.f + Offset.x;
-			Rect.Top = m_Pos.y - Height / 2.f + Offset.y;
-			Rect.Right = m_Pos.x + Width / 2.f + Offset.x;
-			Rect.Bottom = m_Pos.y + Height / 2.f + Offset.y;
-
-			((CColliderBox*)Bottom)->SetInfo(Rect);
-
-			if (Rect.Left > HitPoint.x || Rect.Right < HitPoint.x)
+			if (Bottom->CheckCollisionList("StagePixel"))
 			{
-				m_FallTime += DeltaTime * m_GravityAccel * 30;
+				Vector2 HitPoint = Bottom->GetHitPoint();
+				Vector2 Offset = Bottom->GetOffset();
 
-				m_Pos.y += 0.5f * GRAVITY * m_FallTime;
+				float Width = ((CColliderBox*)Bottom)->GetWidth();
+				float Height = ((CColliderBox*)Bottom)->GetHeight();
+
+				RectInfo Rect;
+				Rect.Left = m_Pos.x - Width / 2.f + Offset.x;
+				Rect.Top = m_Pos.y - Height / 2.f + Offset.y;
+				Rect.Right = m_Pos.x + Width / 2.f + Offset.x;
+				Rect.Bottom = m_Pos.y + Height / 2.f + Offset.y;
+
+				((CColliderBox*)Bottom)->SetInfo(Rect);
+
+				if (Rect.Left > HitPoint.x || Rect.Right < HitPoint.x)
+				{
+					m_FallTime += DeltaTime * m_GravityAccel * 30;
+
+					m_Pos.y += 0.5f * GRAVITY * m_FallTime;
+				}
 			}
 		}
 	}
@@ -836,106 +853,111 @@ void CPlayer::MoveLeft(float DeltaTime)
 
 void CPlayer::MoveRight(float DeltaTime)
 {
-	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
-	std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
-
-	// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
-	if (!m_Jump)
+	if (!m_Death)
 	{
-		// 앉아있는 중에 오른쪽 이동키가 들어오면 오른쪽으로 기어가기
-		if (m_SitDown)
+		std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+		std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
+
+		// 만약에 점프중이면 달리는 애니메이션으로 전환하면 안됨
+		if (!m_Jump)
 		{
-			ChangeTopAnimation("Blank");
-			ChangeBottomAnimation("PlayerCrawlRight");
-			m_MoveSpeed = 150.f;
-			Move(Vector2(1.f, 0.f));
+			// 앉아있는 중에 오른쪽 이동키가 들어오면 오른쪽으로 기어가기
+			if (m_SitDown)
+			{
+				ChangeTopAnimation("Blank");
+				ChangeBottomAnimation("PlayerCrawlRight");
+				m_MoveSpeed = 150.f;
+				Move(Vector2(1.f, 0.f));
+			}
+
+			else
+			{
+				// 총을 쏘거나 폭탄을 던지는 도중에 캔슬하고
+				// 움직이지 않도록 한다
+				// VerticalJump중일때도 바꾸면 안되는 이유는
+				// Obstacle에서 떨어질 때 VerticalJump 애니메이션으로
+				// 전환되는데 그때 RunRight로 전환해버리면
+				// PostUpdate에서 Idle로 전환되어버릴 수 있다.
+				if (CurTop.find("NormalFire") == std::string::npos
+					&& CurTop.find("Bomb") == std::string::npos
+					&& CurTop.find("VerticalJump") == std::string::npos)
+				{
+					ChangeTopAnimation("PlayerRunRightTop");
+				}
+
+				if (CurTop.find("NormalFireLeft") != std::string::npos ||
+					CurTop.find("BombLeft") != std::string::npos ||
+					CurTop.find("VerticalJump") != std::string::npos)
+					return;
+
+				ChangeBottomAnimation("PlayerRunRightBottom");
+				m_MoveSpeed = 400.f;
+				Move(Vector2(1.f, 0.f));
+			}
 		}
 
 		else
 		{
-			// 총을 쏘거나 폭탄을 던지는 도중에 캔슬하고
-			// 움직이지 않도록 한다
-			// VerticalJump중일때도 바꾸면 안되는 이유는
-			// Obstacle에서 떨어질 때 VerticalJump 애니메이션으로
-			// 전환되는데 그때 RunRight로 전환해버리면
-			// PostUpdate에서 Idle로 전환되어버릴 수 있다.
-			if (CurTop.find("NormalFire") == std::string::npos
-				&& CurTop.find("Bomb") == std::string::npos
-				&& CurTop.find("VerticalJump") == std::string::npos)
+			// FrontJumpLeft중인데 오른쪽 방향키가 들어오면
+			// FrontJumpRight로 전환하지 않는다
+			// 점프하면서 Fire하거나 폭탄 던지는중이라도
+			// FrontJumpRight로 변환하지 않는다
+			if (CurTop.find("FrontJumpLeft") == std::string::npos &&
+				CurTop.find("PlayerNormalFireRightTop") == std::string::npos &&
+				CurTop.find("BombRightTop") == std::string::npos)
 			{
-				ChangeTopAnimation("PlayerRunRightTop");
+				ChangeTopAnimation("PlayerFrontJumpRightTop");
+				ChangeBottomAnimation("PlayerFrontJumpRightBottom");
 			}
-
-			if (CurTop.find("NormalFireLeft") != std::string::npos ||
-				CurTop.find("BombLeft") != std::string::npos ||
-				CurTop.find("VerticalJump") != std::string::npos)
-				return;
-
-			ChangeBottomAnimation("PlayerRunRightBottom");
-			m_MoveSpeed = 400.f;
 			Move(Vector2(1.f, 0.f));
 		}
-	}
 
-	else
-	{
-		// FrontJumpLeft중인데 오른쪽 방향키가 들어오면
-		// FrontJumpRight로 전환하지 않는다
-		// 점프하면서 Fire하거나 폭탄 던지는중이라도
-		// FrontJumpRight로 변환하지 않는다
-		if (CurTop.find("FrontJumpLeft") == std::string::npos &&
-			CurTop.find("PlayerNormalFireRightTop") == std::string::npos &&
-			CurTop.find("BombRightTop") == std::string::npos)
+		// 위의 Move로 인해서 X방향으로만 이동하기 전에는 바닥과
+		// 충돌중이었으나 X방향으로 이동함으로써 내리막길인 
+		// 바닥과 순간적으로 충돌하지 않으나 아직 바닥과의 충돌함수가
+		// 호출되기 전이라서 m_IsGround는 true로 되어 있어서
+		// Player::Update에서 중력이 작용하는 코드도 이번 프레임에서는
+		// 건너뛴다. 따라서 여기서 추가적으로 중력을 작용하는 코드를 작성해준다
+		// 다만 이걸 따지는 경우는 Player와 Stage 충돌체간에만 따진다
+		// Obstacle은 적용X
+		if (m_IsGround)
 		{
-			ChangeTopAnimation("PlayerFrontJumpRightTop");
-			ChangeBottomAnimation("PlayerFrontJumpRightBottom");
-		}
-		Move(Vector2(1.f, 0.f));
-	}
+			CCollider* Bottom = FindCollider("Body");
 
-	// 위의 Move로 인해서 X방향으로만 이동하기 전에는 바닥과
-	// 충돌중이었으나 X방향으로 이동함으로써 내리막길인 
-	// 바닥과 순간적으로 충돌하지 않으나 아직 바닥과의 충돌함수가
-	// 호출되기 전이라서 m_IsGround는 true로 되어 있어서
-	// Player::Update에서 중력이 작용하는 코드도 이번 프레임에서는
-	// 건너뛴다. 따라서 여기서 추가적으로 중력을 작용하는 코드를 작성해준다
-	// 다만 이걸 따지는 경우는 Player와 Stage 충돌체간에만 따진다
-	// Obstacle은 적용X
-	if (m_IsGround)
-	{
-		CCollider* Bottom = FindCollider("Body");
-
-		if (Bottom->CheckCollisionList("StagePixel"))
-		{
-			Vector2 HitPoint = Bottom->GetHitPoint();
-			Vector2 Offset = Bottom->GetOffset();
-
-			float Width = ((CColliderBox*)Bottom)->GetWidth();
-			float Height = ((CColliderBox*)Bottom)->GetHeight();
-
-			RectInfo Rect;
-			Rect.Left = m_Pos.x - Width / 2.f + Offset.x;
-			Rect.Top = m_Pos.y - Height / 2.f + Offset.y;
-			Rect.Right = m_Pos.x + Width / 2.f + Offset.x;
-			Rect.Bottom = m_Pos.y + Height / 2.f + Offset.y;
-
-			((CColliderBox*)Bottom)->SetInfo(Rect);
-
-			float MidPoint = (Rect.Left + Rect.Right) / 2;
-
-			if (MidPoint - ((CColliderBox*)Bottom)->GetWidth() / 2 > HitPoint.x)
+			if (Bottom->CheckCollisionList("StagePixel"))
 			{
-				m_FallTime += DeltaTime * m_GravityAccel * 30;
+				Vector2 HitPoint = Bottom->GetHitPoint();
+				Vector2 Offset = Bottom->GetOffset();
 
-				m_Pos.y += 0.5f * GRAVITY * m_FallTime;
+				float Width = ((CColliderBox*)Bottom)->GetWidth();
+				float Height = ((CColliderBox*)Bottom)->GetHeight();
+
+				RectInfo Rect;
+				Rect.Left = m_Pos.x - Width / 2.f + Offset.x;
+				Rect.Top = m_Pos.y - Height / 2.f + Offset.y;
+				Rect.Right = m_Pos.x + Width / 2.f + Offset.x;
+				Rect.Bottom = m_Pos.y + Height / 2.f + Offset.y;
+
+				((CColliderBox*)Bottom)->SetInfo(Rect);
+
+				float MidPoint = (Rect.Left + Rect.Right) / 2;
+
+				if (MidPoint - ((CColliderBox*)Bottom)->GetWidth() / 2 > HitPoint.x)
+				{
+					m_FallTime += DeltaTime * m_GravityAccel * 30;
+
+					m_Pos.y += 0.5f * GRAVITY * m_FallTime;
+				}
 			}
 		}
 	}
-
 }
 
 void CPlayer::BulletFire(float DeltaTime)
 {
+	if (m_Death)
+		return;
+
 	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 	std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
 
@@ -1046,6 +1068,7 @@ void CPlayer::CloneBullet()
 		Vector2(0.f, 0.f), Vector2(20.f, 20.f));
 
 	Bullet->SetZOrder(GetZOrder());
+	Bullet->SetColliderProfile("BulletBody", "PlayerAttack");
 
 	std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 	std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
@@ -1054,13 +1077,13 @@ void CPlayer::CloneBullet()
 	{
 		if (CurBottom.find("NormalAttackRight") != std::string::npos)
 		{
-			Bullet->SetPos(m_Pos + Vector2(5.f, -40.f));
+			Bullet->SetPos(m_Pos + Vector2(50.f, -40.f));
 			Bullet->SetDir(1.f, 0.f);
 		}
 
 		else if (CurBottom.find("NormalAttackLeft") != std::string::npos)
 		{
-			Bullet->SetPos(m_Pos + Vector2(-5.f, -40.f));
+			Bullet->SetPos(m_Pos + Vector2(-50.f, -40.f));
 			Bullet->SetDir(-1.f, 0.f);
 		}
 	}
@@ -1419,38 +1442,194 @@ void CPlayer::SitDownBombEnd()
 	}
 }
 
+void CPlayer::Respawn()
+{
+	CUIMain* MainWindow = (CUIMain*)m_Scene->FindUIWindow("MainWindow");
+
+	MainWindow->DecreaseCredit(0.f);
+
+	m_Pos.y = 300.f;
+
+	std::string CurBottom = m_BottomAnimation->GetCurrentAnimation()->Sequence->GetName();
+	m_FallStartY = 300.f;
+	m_FallTime = 0.f;
+	m_Death = false;
+	m_BeforeRender = true;
+
+	CColliderSphere* Head = (CColliderSphere*)FindCollider("Head");
+	Head->SetEnable(true);
+
+	CColliderBox* Body = (CColliderBox*)FindCollider("Body");
+	Body->SetEnable(true);
+
+	if (CurBottom.find("Right") != std::string::npos)
+	{
+		ChangeTopAnimation("PlayerVerticalJumpRightTop");
+		ChangeBottomAnimation("PlayerVerticalJumpRightBottom");
+	}
+
+	else if (CurBottom.find("Left") != std::string::npos)
+	{
+		ChangeTopAnimation("PlayerVerticalJumpLeftTop");
+		ChangeBottomAnimation("PlayerVerticalJumpLeftBottom");
+	}
+}
+
+void CPlayer::HideCollider()
+{
+	CCollider* Head = FindCollider("Head");
+	Head->SetEnable(false);
+
+	Head->ClearCollisionList();
+
+	CCollider* Body = FindCollider("Body");
+	Body->SetEnable(false);
+
+	Body->ClearCollisionList();
+
+	m_Death = true;
+}
+
 void CPlayer::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 {
-	if (Dest->GetName() == "StagePixel")
+	if (Dest->GetOwner()->GetName() == "Knife")
 	{
+		ChangeTopAnimation("Blank");
+		m_Death = true;
+		std::string CurBottom = m_BottomAnimation->GetCurrentAnimation()->Sequence->GetName();
 
-		bool FloorCollision = ((CColliderBox*)Src)->GetFloorCollision();
-		bool CamCollision = ((CColliderBox*)Src)->GetCamCollision();
-
-		// 바닥, 카메라 충돌체에 모두 충돌했을 경우
-		if (FloorCollision && CamCollision)
+		if (CurBottom.find("Right") != std::string::npos)
 		{
-			// m_PhysicsSimulate = false;
-			m_IsGround = true;
-
-			m_Jump = false;
-			// 카메라 충돌체와 닿았다면 바닥과도 닿아있을 것이므로
-			// 바닥과의 Hit Point를 찾아서 CollisionRectToPixel에서 
-			// 갱신해놓았을 것이다. 따라서 여기서 그 바닥과의 Hit Point로
-			// player의 y좌표를 계속 갱신해서 카메라를 고정함과 동시에
-			// player를 바닥에 붙어있게 만든다
-			m_Pos.y = Src->GetHitPoint().y;
-			m_MoveSpeed = 400.f;
-			m_ObstacleFall = false;
-
-			// 첫번째 카메라 충돌체에 부딪히면(Camel_Arabian 등장)
-			// 죽이기 전까지는 카메라 x축 이동 고정
-			//CCamera::GetInst()->SetXFix(true);
-			//CCamera::GetInst()->SetYFix(true);
+			ChangeBottomAnimation("PlayerDeathRight");
 		}
 
-		// 바닥 충돌체에만 충돌한 경우
-		else if (FloorCollision)
+		else if (CurBottom.find("Left") != std::string::npos)
+		{
+			ChangeBottomAnimation("PlayerDeathLeft");
+		}
+		HideCollider();
+	}
+
+	if (Dest->GetName() == "CloseKnife")
+	{
+		ChangeTopAnimation("Blank");
+		m_Death = true;
+		std::string CurBottom = m_BottomAnimation->GetCurrentAnimation()->Sequence->GetName();
+
+		if (CurBottom.find("Right") != std::string::npos)
+		{
+			ChangeBottomAnimation("PlayerDeathRight");
+		}
+
+		else if (CurBottom.find("Left") != std::string::npos)
+		{
+			ChangeBottomAnimation("PlayerDeathLeft");
+		}
+
+		HideCollider();
+	}
+
+	if (Dest->GetName() == "ArabianGen1")
+	{
+		((CMainScene*)m_Scene)->GenArabian1();
+
+		Dest->Destroy();
+	}
+
+	if (Dest->GetName() == "StagePixel")
+	{
+		CCollider* Head = FindCollider("Head");
+
+		if (Src != Head)
+		{
+			bool FloorCollision = ((CColliderBox*)Src)->GetFloorCollision();
+			bool CamCollision = ((CColliderBox*)Src)->GetCamCollision();
+
+			// 바닥, 카메라 충돌체에 모두 충돌했을 경우
+			if (FloorCollision && CamCollision)
+			{
+				// m_PhysicsSimulate = false;
+				m_IsGround = true;
+
+				m_Jump = false;
+				// 카메라 충돌체와 닿았다면 바닥과도 닿아있을 것이므로
+				// 바닥과의 Hit Point를 찾아서 CollisionRectToPixel에서 
+				// 갱신해놓았을 것이다. 따라서 여기서 그 바닥과의 Hit Point로
+				// player의 y좌표를 계속 갱신해서 카메라를 고정함과 동시에
+				// player를 바닥에 붙어있게 만든다
+				m_Pos.y = Src->GetHitPoint().y;
+				m_MoveSpeed = 400.f;
+				m_ObstacleFall = false;
+
+				// 첫번째 카메라 충돌체에 부딪히면(Camel_Arabian 등장)
+				// 죽이기 전까지는 카메라 x축 이동 고정
+				//CCamera::GetInst()->SetXFix(true);
+				//CCamera::GetInst()->SetYFix(true);
+			}
+
+			// 바닥 충돌체에만 충돌한 경우
+			else if (FloorCollision && !m_Death)
+			{
+				m_IsGround = true;
+				m_Jump = false;
+
+				m_FallTime = 0.f;
+
+				m_Pos.y = Src->GetHitPoint().y;
+				m_FallStartY = m_Pos.y;
+				m_JumpVelocity = 0.f;
+				m_MoveSpeed = 400.f;
+				m_ObstacleFall = false;
+
+				// 지면이랑 닿는 순간 한번만 Idle 애니메이션으로 복귀
+				std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+				std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
+
+				if (!m_SitDown && CurBottom.find("Run") == std::string::npos &&
+					CurBottom.find("Fire") == std::string::npos &&
+					CurBottom.find("Crawl") == std::string::npos &&
+					CurBottom.find("Right") != std::string::npos)
+				{
+					// 점프하는중에 Monster의 공격을 받아서 죽는
+					// 애니메이션 중이라면 땅에 착지해도 Idle애니메이션으로
+					// 변경하지 않는다
+					if (!m_Death)
+					{
+						ChangeTopAnimation("PlayerIdleRightTop");
+						ChangeBottomAnimation("PlayerIdleRightBottom");
+
+						CCollider* Head = FindCollider("Head");
+						Head->SetEnable(true);
+					}
+				}
+
+				else if (!m_SitDown && CurBottom.find("Run") == std::string::npos &&
+					CurBottom.find("Fire") == std::string::npos &&
+					CurBottom.find("Crawl") == std::string::npos &&
+					CurBottom.find("Left") != std::string::npos)
+				{
+					// 점프하는중에 Monster의 공격을 받아서 죽는
+					// 애니메이션 중이라면 땅에 착지해도 Idle애니메이션으로
+					// 변경하지 않는다
+					if (!m_Death)
+					{
+						ChangeTopAnimation("PlayerIdleLeftTop");
+						ChangeBottomAnimation("PlayerIdleLeftBottom");
+
+						CCollider* Head = FindCollider("Head");
+						Head->SetEnable(true);
+					}
+				}
+			}
+		}
+	}
+
+	else if ((Dest->GetName() == "BackObstaclePixel") ||
+		(Dest->GetName() == "FrontObstaclePixel") &&!m_Death)
+	{
+		CCollider* Head = FindCollider("Head");
+
+		if (Src != Head)
 		{
 			m_IsGround = true;
 			m_Jump = false;
@@ -1460,7 +1639,6 @@ void CPlayer::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 			m_Pos.y = Src->GetHitPoint().y;
 			m_FallStartY = m_Pos.y;
 			m_JumpVelocity = 0.f;
-			m_MoveSpeed = 400.f;
 			m_ObstacleFall = false;
 
 			// 지면이랑 닿는 순간 한번만 Idle 애니메이션으로 복귀
@@ -1491,86 +1669,72 @@ void CPlayer::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 				Head->SetEnable(true);
 			}
 		}
-	}
-
-	else if ((Dest->GetName() == "BackObstaclePixel") ||
-		(Dest->GetName() == "FrontObstaclePixel"))
-	{
-		m_IsGround = true;
-		m_Jump = false;
-
-		m_FallTime = 0.f;
-
-		m_Pos.y = Src->GetHitPoint().y;
-		m_FallStartY = m_Pos.y;
-		m_JumpVelocity = 0.f;
-		m_ObstacleFall = false;
-
-		// 지면이랑 닿는 순간 한번만 Idle 애니메이션으로 복귀
-		std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
-		std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
-
-		if (!m_SitDown && CurBottom.find("Run") == std::string::npos &&
-			CurBottom.find("Fire") == std::string::npos &&
-			CurBottom.find("Crawl") == std::string::npos &&
-			CurBottom.find("Right") != std::string::npos)
-		{
-			ChangeTopAnimation("PlayerIdleRightTop");
-			ChangeBottomAnimation("PlayerIdleRightBottom");
-
-			CCollider* Head = FindCollider("Head");
-			Head->SetEnable(true);
-		}
-
-		else if (!m_SitDown && CurBottom.find("Run") == std::string::npos &&
-			CurBottom.find("Fire") == std::string::npos &&
-			CurBottom.find("Crawl") == std::string::npos &&
-			CurBottom.find("Left") != std::string::npos)
-		{
-			ChangeTopAnimation("PlayerIdleLeftTop");
-			ChangeBottomAnimation("PlayerIdleLeftBottom");
-
-			CCollider* Head = FindCollider("Head");
-			Head->SetEnable(true);
-		}
 	}		
+
 }
 
 void CPlayer::CollisionStay(CCollider* Src, CCollider* Dest, float DeltaTime)
 {
+	if (Src->GetName() == "Head")
+	{
+		int a = 3;
+	}
+
 	if (Dest->GetName() == "StagePixel")
 	{
+		CCollider* Head = FindCollider("Head");
 
-		bool FloorCollision = ((CColliderBox*)Src)->GetFloorCollision();
-		bool CamCollision = ((CColliderBox*)Src)->GetCamCollision();
-
-		// 바닥, 카메라 충돌체에 모두 충돌했을 경우
-		if (FloorCollision && CamCollision)
+		if (Src != Head)
 		{
-			m_IsGround = true;
-			m_Jump = false;
+			bool FloorCollision = ((CColliderBox*)Src)->GetFloorCollision();
+			bool CamCollision = ((CColliderBox*)Src)->GetCamCollision();
 
-			m_FallTime = 0.f;
-			// 카메라 충돌체와 닿았다면 바닥과도 닿아있을 것이므로
-			// 바닥과의 Hit Point를 찾아서 CollisionRectToPixel에서 
-			// 갱신해놓았을 것이다. 따라서 여기서 그 바닥과의 Hit Point로
-			// player의 y좌표를 계속 갱신해서 카메라를 고정함과 동시에
-			// player를 바닥에 붙어있게 만든다
-			m_Pos.y = Src->GetHitPoint().y;
+			// 바닥, 카메라 충돌체에 모두 충돌했을 경우
+			if (FloorCollision && CamCollision)
+			{
+				m_IsGround = true;
+				m_Jump = false;
 
-			// 첫번째 카메라 충돌체에 부딪히면(Camel_Arabian 등장)
-			// 죽이기 전까지는 카메라 x축 이동 고정
-			//CCamera::GetInst()->SetXFix(true);
-			//CCamera::GetInst()->SetYFix(true);
+				m_FallTime = 0.f;
+				// 카메라 충돌체와 닿았다면 바닥과도 닿아있을 것이므로
+				// 바닥과의 Hit Point를 찾아서 CollisionRectToPixel에서 
+				// 갱신해놓았을 것이다. 따라서 여기서 그 바닥과의 Hit Point로
+				// player의 y좌표를 계속 갱신해서 카메라를 고정함과 동시에
+				// player를 바닥에 붙어있게 만든다
+				m_Pos.y = Src->GetHitPoint().y;
+
+				// 첫번째 카메라 충돌체에 부딪히면(Camel_Arabian 등장)
+				// 죽이기 전까지는 카메라 x축 이동 고정
+				//CCamera::GetInst()->SetXFix(true);
+				//CCamera::GetInst()->SetYFix(true);
+			}
+
+			// 바닥 충돌체에만 충돌한 경우
+			else if (FloorCollision && !m_Death)
+			{
+				std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+				std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
+
+				m_IsGround = true;
+				m_Jump = false;
+
+				m_FallTime = 0.f;
+
+				m_Pos.y = Src->GetHitPoint().y;
+				m_FallStartY = m_Pos.y;
+				m_JumpVelocity = 0.f;
+
+			}
 		}
+	}
 
-		// 바닥 충돌체에만 충돌한 경우
-		else if (FloorCollision)
+	else if ((Dest->GetName() == "BackObstaclePixel") ||
+		(Dest->GetName() == "FrontObstaclePixel") && !m_Death)
+	{
+		CCollider* Head = FindCollider("Head");
+
+		if (Src != Head && !m_Death)
 		{
-
-			std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
-			std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
-
 			m_IsGround = true;
 			m_Jump = false;
 
@@ -1580,48 +1744,33 @@ void CPlayer::CollisionStay(CCollider* Src, CCollider* Dest, float DeltaTime)
 			m_FallStartY = m_Pos.y;
 			m_JumpVelocity = 0.f;
 
-		}
-	}
+			// 지면이랑 닿는 순간 한번만 Idle 애니메이션으로 복귀
+			std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
+			std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
 
-	else if ((Dest->GetName() == "BackObstaclePixel") ||
-		(Dest->GetName() == "FrontObstaclePixel"))
-	{
+			if (!m_SitDown && CurBottom.find("Run") == std::string::npos &&
+				CurBottom.find("Fire") == std::string::npos &&
+				CurBottom.find("Crawl") == std::string::npos &&
+				CurBottom.find("Right") != std::string::npos)
+			{
+				ChangeTopAnimation("PlayerIdleRightTop");
+				ChangeBottomAnimation("PlayerIdleRightBottom");
 
-		m_IsGround = true;
-		m_Jump = false;
+				CCollider* Head = FindCollider("Head");
+				Head->SetEnable(true);
+			}
 
-		m_FallTime = 0.f;
+			else if (!m_SitDown && CurBottom.find("Run") == std::string::npos &&
+				CurBottom.find("Fire") == std::string::npos &&
+				CurBottom.find("Crawl") == std::string::npos &&
+				CurBottom.find("Left") != std::string::npos)
+			{
+				ChangeTopAnimation("PlayerIdleLeftTop");
+				ChangeBottomAnimation("PlayerIdleLeftBottom");
 
-		m_Pos.y = Src->GetHitPoint().y;
-		m_FallStartY = m_Pos.y;
-		m_JumpVelocity = 0.f;
-
-		// 지면이랑 닿는 순간 한번만 Idle 애니메이션으로 복귀
-		std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
-		std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
-
-		if (!m_SitDown && CurBottom.find("Run") == std::string::npos &&
-			CurBottom.find("Fire") == std::string::npos &&
-			CurBottom.find("Crawl") == std::string::npos &&
-			CurBottom.find("Right") != std::string::npos)
-		{
-			ChangeTopAnimation("PlayerIdleRightTop");
-			ChangeBottomAnimation("PlayerIdleRightBottom");
-
-			CCollider* Head = FindCollider("Head");
-			Head->SetEnable(true);
-		}
-
-		else if (!m_SitDown && CurBottom.find("Run") == std::string::npos &&
-			CurBottom.find("Fire") == std::string::npos &&
-			CurBottom.find("Crawl") == std::string::npos &&
-			CurBottom.find("Left") != std::string::npos)
-		{
-			ChangeTopAnimation("PlayerIdleLeftTop");
-			ChangeBottomAnimation("PlayerIdleLeftBottom");
-
-			CCollider* Head = FindCollider("Head");
-			Head->SetEnable(true);
+				CCollider* Head = FindCollider("Head");
+				Head->SetEnable(true);
+			}
 		}
 	}
 }
@@ -1641,15 +1790,19 @@ void CPlayer::CollisionEnd(CCollider* Src, CCollider* Dest, float DeltaTime)
 		std::string CurTop = m_TopAnimation->m_CurrentAnimation->Sequence->GetName();
 		std::string CurBottom = m_BottomAnimation->m_CurrentAnimation->Sequence->GetName();
 
+
 		if (CurTop.find("Right") != std::string::npos)
 		{
+			if (m_Jump)
+				return;
+
 			ChangeTopAnimation("PlayerVerticalJumpRightTop");
 			ChangeBottomAnimation("PlayerVerticalJumpRightBottom");
 
 			// 점프하면서 지형지물과 충돌이 끝나는게 아니라
 			// 떨어짐으로써 지형지물과 충돌이 끝나는 경우	
 			// 앞으로 살짝 나아가면서 착지한다
-			if (!m_Jump)
+			if (!m_Jump && !m_Death)
 			{
 				m_ObstacleFall = true;
 			}
@@ -1657,13 +1810,17 @@ void CPlayer::CollisionEnd(CCollider* Src, CCollider* Dest, float DeltaTime)
 
 		else if (CurTop.find("Left") != std::string::npos)
 		{
+			if (m_Jump)
+				return;
+
 			ChangeTopAnimation("PlayerVerticalJumpLeftTop");
 			ChangeBottomAnimation("PlayerVerticalJumpLeftBottom");
 
-			if (!m_Jump)
+			if (!m_Jump && !m_Death)
 			{
 				m_ObstacleFall = true;
 			}
+
 		}
 	}
 }

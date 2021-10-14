@@ -6,6 +6,7 @@ class CMainScene :
     public CScene
 {
 	friend class CSceneManager;
+	friend class CPlayer;
 
 private:
 	CMainScene();
@@ -28,5 +29,10 @@ private:
 	void LoadObstacle();
 	
 	void CreateArabian();
+	// 맨 처음 Gen충돌체(Front&Back Obstacle 직전에 있는)랑 만났을 때
+	// 호출되는 함수
+	void GenArabian1();
+
+	void GenArabian2();
 };
 

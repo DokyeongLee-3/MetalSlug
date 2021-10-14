@@ -3,6 +3,7 @@
 #include "SceneResource.h"
 #include "../UI/UISelect.h"
 #include "../GameManager.h"
+#include "../UI/UIImage.h"
 
 CSelectScene::CSelectScene()
 {
@@ -133,4 +134,7 @@ void CSelectScene::LoadSound()
 
 	GetSceneResource()->LoadSound("UI", false, "CharacterSelectOK",
 		"OKSound.mp3");
+
+	GetSceneResource()->LoadSound("UI", false, "CoinSound",
+		"coin-sound.wav");
 }

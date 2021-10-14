@@ -36,8 +36,19 @@ private:
 	HBRUSH m_hRedBrush;
 	HPEN m_hGreenPen;
 	HPEN m_hRedPen;
+	int m_PlayerCredit;
 
 public:
+	int GetPlayerCredit()	const
+	{
+		return m_PlayerCredit;
+	}
+
+	void SetPlayerCredit(int Credit)
+	{
+		m_PlayerCredit = Credit;
+	}
+
 	Resolution GetResolution()	const
 	{
 		return m_RS;

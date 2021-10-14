@@ -25,9 +25,12 @@ protected:
     CAnimation* m_TopAnimation;
     CAnimation* m_BottomAnimation;
     bool m_SitDown;
-    bool m_BeforeRender;
     // 점프에 의해서가 아닌 지형지물에서 떨어지고 있는 상황이라면 true
     bool m_ObstacleFall;
+    // 목숨 개수
+    int m_Credits;
+    // 죽는 애니메이션 동작 중인가
+    bool m_Death;
 
 public:
     virtual void Start();
@@ -94,6 +97,8 @@ public:
     void Bomb(float DeltaTime);
     void BombEnd();
     void SitDownBombEnd();
+    void Respawn();
+    void HideCollider();
 
     void CollisionBegin(CCollider* Src, CCollider* Dest,
         float DeltaTime);

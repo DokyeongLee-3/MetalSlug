@@ -106,6 +106,9 @@
     <Filter Include="03.Object\01.Character\01.Monster">
       <UniqueIdentifier>{30ec72cf-f486-496c-8acf-e876df96d0c7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03.Object\06.Knife">
+      <UniqueIdentifier>{120c66e1-54f0-438c-ab94-72a7c84a4e90}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -236,6 +239,15 @@
     </ClCompile>
     <ClCompile Include="Object\Monster.cpp">
       <Filter>03.Object\01.Character\01.Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Knife.cpp">
+      <Filter>03.Object\06.Knife</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\UIMain.cpp">
+      <Filter>07.UI\02.Window</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\NumberWidget.cpp">
+      <Filter>07.UI\01.Widget</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -403,6 +415,15 @@
     </ClInclude>
     <ClInclude Include="Object\Monster.h">
       <Filter>03.Object\01.Character\01.Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Knife.h">
+      <Filter>03.Object\06.Knife</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIMain.h">
+      <Filter>07.UI\02.Window</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\NumberWidget.h">
+      <Filter>07.UI\01.Widget</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

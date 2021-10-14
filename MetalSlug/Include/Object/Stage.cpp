@@ -4,6 +4,7 @@
 #include "../Scene/Scene.h"
 #include "../GameManager.h"
 #include "../Collision/ColliderPixel.h"
+#include "../Collision/ColliderBox.h"
 
 CStage::CStage()
 {
@@ -40,6 +41,11 @@ bool CStage::Init()
 	Pixel->SetCollisionProfile("Default");
 	Pixel->SetStartPos(0.f, 0.f);
 
+	CColliderBox* ArabianGen = AddCollider<CColliderBox>("ArabianGen1");
+	ArabianGen->SetExtent(60, 200);
+	ArabianGen->SetOffset(Vector2(1500.f, 730.f));
+	ArabianGen->SetCollisionProfile("GenTrigger");
+
 	return true;
 }
 
@@ -75,6 +81,28 @@ void CStage::Render(HDC hDC)
 		m_Texture->Render(hDC, LT, CamPos, 
 			Vector2((float)CGameManager::GetInst()->GetResolution().Width,
 				(float)CGameManager::GetInst()->GetResolution().Height));
+
+		auto iter = m_ColliderList.begin();
+		auto iterEnd = m_ColliderList.end();
+
+		for (; iter != iterEnd; )
+		{
+			std::string Name = (*iter)->GetName();
+
+			if (!(*iter)->IsActive())
+			{
+				iter = m_ColliderList.erase(iter);
+				iterEnd = m_ColliderList.end();
+				continue;
+			}
+
+			else if ((*iter)->GetEnable() && Name != "StagePixel")
+			{
+				(*iter)->Render(hDC);
+			}
+
+			++iter;
+		}
 	}
 }
 

@@ -1,15 +1,22 @@
 
 #include "Arabian.h"
+#include "Knife.h"
 #include "../Scene/Scene.h"
 #include "../Collision/ColliderBox.h"
+#include "../GameManager.h"
+#include "../Scene/Scene.h"
+
+
 
 CArabian::CArabian()	:
-	m_ThrowDistance(300.f),
-	m_SwingDistance(80.f),
+	m_ThrowDistance(400.f),
+	m_SwingDistance(85.f),
 	m_State(EArabian_State::Shuffle),
 	m_Target(nullptr),
 	m_AttackTime(0),
-	m_Changing(false)
+	m_Changing(false),
+	m_ShuffleTime(0),
+	m_ShuffleLimit(0)
 {
 	m_ObjType = EObject_Type::Character;
 }
@@ -45,12 +52,15 @@ bool CArabian::Init()
 	m_IsGround = false;
 	m_ZOrder = 6;
 	m_GravityAccel = 10.f;
-	m_MoveSpeed = 50.f;
+	m_MoveSpeed = 70.f;
 	m_Pivot = Vector2(0.5f, 1.f);
+
+	SetTarget((CPlayer*)m_Scene->GetPlayer());
+
+	m_ShuffleLimit = (rand() % 2) + 1;
 
 	CreateAnimation();
 	AddArabianAnimation();
-	
 
 	CColliderBox* Body = AddCollider<CColliderBox>("Body");
 	Body->SetExtent(80.f, 120.f);
@@ -207,14 +217,23 @@ void CArabian::FiniteState()
 
 	if (m_Target)
 	{
-		float Dist = abs(m_Pos.x - m_Target->GetPos().x);
+		float XDist = m_Pos.x - m_Target->GetPos().x;
 
-		if (Dist <= m_ThrowDistance)
+		if (XDist <= m_ThrowDistance && XDist >= -m_ThrowDistance)
 		{
 			m_State = EArabian_State::Shuffle;
 
-			if (Dist <= m_SwingDistance)
+			float YDist = m_Pos.y - m_Target->GetPos().y;
+			if (XDist <= m_SwingDistance && XDist >= -m_SwingDistance 
+				&& YDist <= 100.f && YDist >= -100.f)
+			{
 				m_State = EArabian_State::Attack;
+
+				int Frame = m_Animation->GetCurrentAnimation()->Frame;
+
+				if (Frame == 1)
+					int a = 3;
+			}
 		}
 
 		else
@@ -226,8 +245,15 @@ void CArabian::FiniteState()
 	switch (m_State)
 	{
 	case EArabian_State::Shuffle:
-		if (CurAnim.find("Shuffle") == std::string::npos)
+		if (!m_Changing)
 		{
+			if (m_ShuffleTime == m_ShuffleLimit)
+			{
+				m_ShuffleTime = 0;
+				Prepare();
+				return;
+			}
+
 			Shuffle();
 		}
 		break;
@@ -238,7 +264,7 @@ void CArabian::FiniteState()
 		}
 		break;
 	case EArabian_State::Attack:
-		if (CurAnim.find("Attack") == std::string::npos)
+		if (!m_Changing)
 		{
 			Swing();
 		}
@@ -250,33 +276,48 @@ void CArabian::AddArabianAnimation()
 {
 	AddAnimation("ArabianRunLeft", true, 1.f);
 	AddAnimation("ArabianRunRight", true, 1.f, 1.f, true);
-	AddAnimation("ArabianThrowLeft", false, 1.6f);
-	AddAnimation("ArabianThrowRight", false, 1.6f, 1.f, true);
-	AddAnimation("ArabianShuffleLeft", false, 0.8f);
-	AddAnimation("ArabianShuffleRight", false, 0.8f, 1.f, true);
+	AddAnimation("ArabianThrowLeft", false, 2.f);
+	AddAnimation("ArabianThrowRight", false, 2.f, 1.f, true);
+	AddAnimation("ArabianShuffleLeft", false, 1.7f);
+	AddAnimation("ArabianShuffleRight", false, 1.7f, 1.f, true);
 	AddAnimation("ArabianPrepareLeft", false, 0.6f);
 	AddAnimation("ArabianPrepareRight", false, 0.6f, 1.f, true);
 	AddAnimation("ArabianAttackLeft", false, 0.8f);
 	AddAnimation("ArabianAttackRight", false, 0.8f, 1.f, true);
-	AddAnimation("ArabianDeathAnimationLeft1", false, 1.f);
-	AddAnimation("ArabianDeathAnimationRight1", false, 1.f, 1.f, true);
-	AddAnimation("ArabianDeathAnimationLeft2", false, 1.f);
-	AddAnimation("ArabianDeathAnimationRight2", false, 1.f, 1.f, true);
-	AddAnimation("ArabianDeathAnimationLeft3", false, 1.f);
-	AddAnimation("ArabianDeathAnimationRight3", false, 1.f, 1.f, true);
+	AddAnimation("ArabianDeathAnimationLeft1", false, 2.f);
+	AddAnimation("ArabianDeathAnimationRight1", false, 2.f, 1.f, true);
+	AddAnimation("ArabianDeathAnimationLeft2", false, 1.4f);
+	AddAnimation("ArabianDeathAnimationRight2", false, 1.4f, 1.f, true);
+	AddAnimation("ArabianDeathAnimationLeft3", false, 2.f);
+	AddAnimation("ArabianDeathAnimationRight3", false, 2.f, 1.f, true);
 	AddAnimation("ArabianJumpLeft", false, 1.f);
 	AddAnimation("ArabianJumpRight", false, 1.f, 1.f, true);
 	AddAnimation("ArabianTurnLeft", false, 0.2f);
 	AddAnimation("ArabianTurnRight", false, 0.2f, 1.f, true);
 
+
+	SetAnimationEndNotify<CArabian>("ArabianShuffleLeft",
+		this, &CArabian::ShuffleEnd);
+	SetAnimationEndNotify<CArabian>("ArabianShuffleRight",
+		this, &CArabian::ShuffleEnd);
 	SetAnimationEndNotify<CArabian>("ArabianThrowLeft",
-		this, &CArabian::FiniteState);
+		this, &CArabian::ThrowEnd);
 	SetAnimationEndNotify<CArabian>("ArabianThrowRight",
-		this, &CArabian::FiniteState);
+		this, &CArabian::ThrowEnd);
 	SetAnimationEndNotify<CArabian>("ArabianAttackLeft",
 		this, &CArabian::SwingEnd);
 	SetAnimationEndNotify<CArabian>("ArabianAttackRight",
 		this, &CArabian::SwingEnd);
+
+	AddAnimationNotify<CArabian>("ArabianAttackLeft", 1, this,
+		&CArabian::SetCloseKnifeCollider);
+	AddAnimationNotify<CArabian>("ArabianAttackRight", 5, this,
+		&CArabian::SetCloseKnifeCollider);
+	AddAnimationNotify<CArabian>("ArabianAttackLeft", 4, this,
+		&CArabian::DestroyCloseKnifeCollider);
+	AddAnimationNotify<CArabian>("ArabianAttackRight", 2, this,
+		&CArabian::DestroyCloseKnifeCollider);
+
 	SetAnimationEndNotify<CArabian>("ArabianJumpLeft",
 		this, &CArabian::FiniteState);
 	SetAnimationEndNotify<CArabian>("ArabianJumpRight",
@@ -286,15 +327,39 @@ void CArabian::AddArabianAnimation()
 	SetAnimationEndNotify<CArabian>("ArabianPrepareRight",
 		this, &CArabian::PrepareEnd);
 	SetAnimationEndNotify<CArabian>("ArabianTurnLeft",
-		this, &CArabian::ChangingEnd);
+		this, &CArabian::TurnEnd);
 	SetAnimationEndNotify<CArabian>("ArabianTurnRight",
-		this, &CArabian::ChangingEnd);
+		this, &CArabian::TurnEnd);
 
-	SetAnimationEndNotify<CArabian>("ArabianShuffleLeft",
-		this, &CArabian::Prepare);
-	SetAnimationEndNotify<CArabian>("ArabianShuffleRight",
-		this, &CArabian::Prepare);
+	SetAnimationEndNotify<CArabian>("ArabianDeathAnimationLeft1",
+		this, &CArabian::DeathEnd);
+	SetAnimationEndNotify<CArabian>("ArabianDeathAnimationRight1",
+		this, &CArabian::DeathEnd);
+	SetAnimationEndNotify<CArabian>("ArabianDeathAnimationLeft2",
+		this, &CArabian::DeathEnd);
+	SetAnimationEndNotify<CArabian>("ArabianDeathAnimationRight2",
+		this, &CArabian::DeathEnd);
+	SetAnimationEndNotify<CArabian>("ArabianDeathAnimationLeft3",
+		this, &CArabian::DeathEnd);
+	SetAnimationEndNotify<CArabian>("ArabianDeathAnimationRight3",
+		this, &CArabian::DeathEnd);
 
+	AddAnimationNotify<CArabian>("ArabianShuffleLeft",
+		4, this, &CArabian::ShuffleMoveLeft);
+	AddAnimationNotify<CArabian>("ArabianShuffleLeft",
+		5, this, &CArabian::ShuffleMoveLeft);
+	AddAnimationNotify<CArabian>("ArabianShuffleLeft",
+		6, this, &CArabian::ShuffleMoveLeft);
+	AddAnimationNotify<CArabian>("ArabianShuffleLeft",
+		10, this, &CArabian::ShuffleMoveRight);
+	AddAnimationNotify<CArabian>("ArabianShuffleLeft",
+		11, this, &CArabian::ShuffleMoveRight);
+
+
+	AddAnimationNotify<CArabian>("ArabianThrowLeft",
+		6, this, &CArabian::CloneKnife);
+	AddAnimationNotify<CArabian>("ArabianThrowRight",
+		11, this, &CArabian::CloneKnife);
 }
 
 void CArabian::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
@@ -324,6 +389,45 @@ void CArabian::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 		m_Pos.y = Src->GetHitPoint().y;
 		m_FallStartY = m_Pos.y;
 		m_JumpVelocity = 0.f;
+	}
+
+	else if ((Dest->GetName() == "BulletBody"))
+	{
+		std::string CurAnim = m_Animation->GetCurrentAnimation()->Sequence->GetName();
+
+		if (CurAnim.find("Right") != std::string::npos)
+		{
+			ChangeAnimation("ArabianDeathAnimationRight1");
+		}
+
+		else if (CurAnim.find("Left") != std::string::npos)
+		{
+			ChangeAnimation("ArabianDeathAnimationLeft1");
+		}
+
+		m_Changing = true;
+
+		CCollider* Body = FindCollider("Body");
+		Body->Destroy();
+	}
+
+	else if ((Dest->GetOwner()->GetName() == "Bomb"))
+	{
+		std::string CurAnim = m_Animation->GetCurrentAnimation()->Sequence->GetName();
+
+		if (CurAnim.find("Right") != std::string::npos)
+		{
+			ChangeAnimation("ArabianDeathAnimationRight2");
+		}
+
+		else if (CurAnim.find("Left") != std::string::npos)
+		{
+			ChangeAnimation("ArabianDeathAnimationLeft2");
+		}
+		m_Changing = true;
+
+		CCollider* Body = FindCollider("Body");
+		Body->Destroy();
 	}
 }
 
@@ -379,8 +483,6 @@ void CArabian::Swing()
 void CArabian::SwingEnd()
 {
 	m_Changing = false;
-
-	FiniteState();
 }
 
 void CArabian::Shuffle()
@@ -389,15 +491,23 @@ void CArabian::Shuffle()
 
 	if (CurAnim.find("Right") != std::string::npos)
 	{
+		ChangeAnimation("ArabianTurnRight");
 		ChangeAnimation("ArabianShuffleRight");
 	}
 
 	else if (CurAnim.find("Left") != std::string::npos)
 	{
+		ChangeAnimation("ArabianTurnLeft");
 		ChangeAnimation("ArabianShuffleLeft");
 	}
 
+	m_Changing = true;
+}
 
+void CArabian::ShuffleEnd()
+{
+	++m_ShuffleTime;
+	m_Changing = false;
 }
 
 void CArabian::Prepare()
@@ -420,12 +530,30 @@ void CArabian::Prepare()
 void CArabian::PrepareEnd()
 {
 	m_Changing = false;
-	FiniteState();
+
+	Throw();
 }
 
 void CArabian::Throw()
 {
+	std::string CurAnim = m_Animation->GetCurrentAnimation()->Sequence->GetName();
 
+	if (CurAnim.find("Right") != std::string::npos)
+	{
+		ChangeAnimation("ArabianThrowRight");
+	}
+
+	else if (CurAnim.find("Left") != std::string::npos)
+	{
+		ChangeAnimation("ArabianThrowLeft");
+	}
+
+	m_Changing = true;
+}
+
+void CArabian::ThrowEnd()
+{
+	m_Changing = false;
 }
 
 void CArabian::Running()
@@ -443,7 +571,7 @@ void CArabian::Running()
 	}
 }
 
-void CArabian::ChangingEnd()
+void CArabian::TurnEnd()
 {
 	m_Changing = false;
 	m_State = EArabian_State::Shuffle;
@@ -458,5 +586,133 @@ void CArabian::ChangingEnd()
 	else if (CurAnim.find("Right") != std::string::npos)
 	{
 		ChangeAnimation("ArabianShuffleLeft");
+	}
+}
+
+void CArabian::DeathEnd()
+{
+	Destroy();
+}
+
+void CArabian::ShuffleMoveRight()
+{
+	m_Pos.x += 3.f;
+
+	if (m_IsGround)
+	{
+		CCollider* Body = FindCollider("Body");
+
+		if (Body->CheckCollisionList("StagePixel"))
+		{
+			Vector2 HitPoint = Body->GetHitPoint();
+			Vector2 Offset = Body->GetOffset();
+
+			float Width = ((CColliderBox*)Body)->GetWidth();
+			float Height = ((CColliderBox*)Body)->GetHeight();
+
+			RectInfo Rect;
+			Rect.Left = m_Pos.x - Width / 2.f + Offset.x;
+			Rect.Top = m_Pos.y - Height / 2.f + Offset.y;
+			Rect.Right = m_Pos.x + Width / 2.f + Offset.x;
+			Rect.Bottom = m_Pos.y + Height / 2.f + Offset.y;
+
+			((CColliderBox*)Body)->SetInfo(Rect);
+
+			float MidPoint = (Rect.Left + Rect.Right) / 2;
+			float DeltaTime = CGameManager::GetInst()->GetDeltaTime();
+
+			if (MidPoint - ((CColliderBox*)Body)->GetWidth() / 2 > HitPoint.x)
+			{
+				m_FallTime += DeltaTime * m_GravityAccel * 30;
+
+				m_Pos.y += 0.5f * GRAVITY * m_FallTime;
+			}
+		}
+	}
+}
+
+void CArabian::CloneKnife()
+{
+	CSharedPtr<CKnife> Knife = m_Scene->CreateObject<CKnife>(
+		"Knife", "ArabianKnife",
+		Vector2(0.f, 0.f), Vector2(59.f, 60.f));
+
+	Knife->SetZOrder(GetZOrder());
+
+	std::string CurAnim = m_Animation->GetCurrentAnimation()->Sequence->GetName();
+
+	if (CurAnim.find("Right") != std::string::npos)
+	{
+		Knife->SetPos(m_Pos + Vector2(5.f, - 65.f));
+		Knife->SetDir(1.f, -1.f);
+		Knife->ChangeAnimation("KnifeRight");
+	}
+
+	else if (CurAnim.find("Left") != std::string::npos)
+	{
+		Knife->SetPos(m_Pos + Vector2(-5.f, -65.f));
+		Knife->SetDir(-1.f, -1.f);
+		Knife->ChangeAnimation("KnifeLeft");
+	}
+}
+
+void CArabian::SetCloseKnifeCollider()
+{
+	CColliderBox* Knife = AddCollider<CColliderBox>("CloseKnife");
+	Knife->SetExtent(30.f, 40.f);
+
+	std::string CurAnim = m_Animation->GetCurrentAnimation()->Sequence->GetName();
+
+	if (CurAnim.find("Right") != std::string::npos)
+	{
+		Knife->SetOffset(Vector2(70.f, -60.f));
+	}
+
+	else if (CurAnim.find("Left") != std::string::npos)
+	{
+		Knife->SetOffset(Vector2(-70.f, -60.f));
+	}
+}
+
+void CArabian::DestroyCloseKnifeCollider()
+{
+	CColliderBox* Knife = (CColliderBox*)FindCollider("CloseKnife");
+	Knife->Destroy();
+}
+
+
+void CArabian::ShuffleMoveLeft()
+{
+	m_Pos.x -= 2.f;
+
+	if (m_IsGround)
+	{
+		CCollider* Body = FindCollider("Body");
+
+		if (Body->CheckCollisionList("StagePixel"))
+		{
+			Vector2 HitPoint = Body->GetHitPoint();
+			Vector2 Offset = Body->GetOffset();
+
+			float Width = ((CColliderBox*)Body)->GetWidth();
+			float Height = ((CColliderBox*)Body)->GetHeight();
+
+			RectInfo Rect;
+			Rect.Left = m_Pos.x - Width / 2.f + Offset.x;
+			Rect.Top = m_Pos.y - Height / 2.f + Offset.y;
+			Rect.Right = m_Pos.x + Width / 2.f + Offset.x;
+			Rect.Bottom = m_Pos.y + Height / 2.f + Offset.y;
+
+			((CColliderBox*)Body)->SetInfo(Rect);
+
+			float DeltaTime = CGameManager::GetInst()->GetDeltaTime();
+
+			if (Rect.Left > HitPoint.x || Rect.Right < HitPoint.x)
+			{
+				m_FallTime += DeltaTime * m_GravityAccel * 30;
+
+				m_Pos.y += 0.5f * GRAVITY * m_FallTime;
+			}
+		}
 	}
 }

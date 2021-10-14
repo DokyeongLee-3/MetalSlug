@@ -17,6 +17,8 @@ private:
     bool m_AttackTime;
     // 애니메이션 동작중에 끊으면 안될 때 true로 해두기
     bool m_Changing;
+    int m_ShuffleTime;
+    int m_ShuffleLimit;
 
 protected:
     CArabian();
@@ -45,6 +47,16 @@ protected:
         float DeltaTime);
 
 public:
+    void SetThrowDistance(float Distance)
+    {
+        m_ThrowDistance = Distance;
+    }
+
+    float GetThrowDistance()    const
+    {
+        return m_ThrowDistance;
+    }
+
     void SetTarget(CPlayer* Target)
     {
         m_Target = Target;
@@ -70,11 +82,20 @@ protected:
     void SwingEnd();
     // Shuffle & Prepare 애니메이션
     void Shuffle();
+    void ShuffleEnd();
     void Prepare();
     void PrepareEnd();
     void Throw();
+    void ThrowEnd();
     void Running();
-    void ChangingEnd();
+    void TurnEnd();
+    void DeathEnd();
 
+    void ShuffleMoveLeft();
+    void ShuffleMoveRight();
+
+    void CloneKnife();
+    void SetCloseKnifeCollider();
+    void DestroyCloseKnifeCollider();
 };
 

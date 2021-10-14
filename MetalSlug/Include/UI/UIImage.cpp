@@ -4,12 +4,16 @@
 #include "../Scene/SceneResource.h"
 
 CUIImage::CUIImage()    :
+    m_FrameIndex(0),
     m_Animation(nullptr)
 {
 }
 
-CUIImage::CUIImage(const CUIImage& widget)
+CUIImage::CUIImage(const CUIImage& widget)  :
+    CUIWidget(widget)
 {
+    m_Texture = widget.m_Texture;
+    m_FrameIndex = 0;
 }
 
 CUIImage::~CUIImage()
@@ -191,10 +195,53 @@ void CUIImage::Render(HDC hDC)
 
     else if (m_Texture)
     {
+        std::string Name = m_Name;
+
         // 내가 속해있는 CUIWindow로부터 상대적으로
         // 떨어져 있는 만큼으로 CUIImage의 위치 설정
         Vector2 Pos = m_Pos + m_Owner->GetPos();
-
+        
         m_Texture->Render(hDC, Pos, Vector2(0.f, 0.f), m_Size);
+    }
+}
+
+void CUIImage::Render(const Vector2& Pos, HDC hDC)
+{
+    if (m_Texture)
+    {
+        Vector2 ImagePos;
+        Vector2 Size = m_Size;
+
+        // UIImage가 애니메이션이 있을 경우(ex. Mouse)
+        if (!m_vecFrameData.empty())
+        {
+            ImagePos = m_vecFrameData[m_FrameIndex].StartPos;
+            Size = m_vecFrameData[m_FrameIndex].Size;
+
+            if (m_Texture->GetTextureType() == ETexture_Type::Frame)
+            {
+                m_Texture->Render(hDC, Pos + m_Offset, ImagePos, Size, m_FrameIndex);
+            }
+
+            else
+            {
+                m_Texture->Render(hDC, Pos + m_Offset, ImagePos, Size);
+            }
+        }
+
+        // 애니메이션이 없을 경우
+        // ex) DamageFont
+        else
+        {
+            if (m_Texture->GetTextureType() == ETexture_Type::Frame)
+            {
+                m_Texture->Render(hDC, Pos + m_Offset, ImagePos, Size, m_FrameIndex);
+            }
+
+            else
+            {
+                m_Texture->Render(hDC, Pos + m_Offset, ImagePos, Size);
+            }
+        }
     }
 }

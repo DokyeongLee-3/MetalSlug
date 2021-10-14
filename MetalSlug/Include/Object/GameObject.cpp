@@ -23,7 +23,8 @@ CGameObject::CGameObject()	:
 	m_JumpVelocity(0.f),
 	m_GravityAccel(10.f),
 	m_LifeTime(0.f),
-	m_ZOrder(0)
+	m_ZOrder(0),
+	m_BeforeRender(true)
 
 {
 }
@@ -333,8 +334,17 @@ void CGameObject::Update(float DeltaTime)
 	{
 		std::string Name = m_Name;
 
-		// 떨어지는 시간을 누적시켜준다.
-		m_FallTime += DeltaTime * m_GravityAccel;
+		if (m_BeforeRender)
+		{
+			m_FallTime = 0.f;
+			m_BeforeRender = false;
+		}
+		
+		else
+		{
+			// 떨어지는 시간을 누적시켜준다.
+			m_FallTime += DeltaTime * m_GravityAccel;
+		}
 
 		float	Velocity = 0.f;
 
@@ -407,7 +417,10 @@ void CGameObject::Collision(float DeltaTime)
 
 	for (; iter != iterEnd; ++iter)
 	{
-		m_Scene->GetSceneCollision()->AddCollider(*iter);
+		if ((*iter)->GetEnable())
+		{
+			m_Scene->GetSceneCollision()->AddCollider(*iter);
+		}
 	}
 }
 

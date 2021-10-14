@@ -29,6 +29,7 @@ bool CCollisionManager::Init()
 	CreateProfile("PlayerAttack", Channel_PlayerAttack, true);
 	CreateProfile("MonsterAttack", Channel_MonsterAttack, true);
 	CreateProfile("Obstacle", Channel_Obstacle, true);
+	CreateProfile("GenTrigger", Channel_GenTrigger, true);
 
 	// 플레이어 충돌체끼리나 플레이어의 총알과
 	// 플레이어가 충돌하면 안된다.
@@ -53,6 +54,11 @@ bool CCollisionManager::Init()
 
 	SetCollisionState("Obstacle", Channel_PlayerAttack, ECollision_State::Ignore);
 	SetCollisionState("Obstacle", Channel_MonsterAttack, ECollision_State::Ignore);
+
+	SetCollisionState("GenTrigger", Channel_PlayerAttack, ECollision_State::Ignore);
+	SetCollisionState("GenTrigger", Channel_MonsterAttack, ECollision_State::Ignore);
+	SetCollisionState("GenTrigger", Channel_Monster, ECollision_State::Ignore);
+	SetCollisionState("GenTrigger", Channel_Obstacle, ECollision_State::Ignore);
 
 	return true;
 }

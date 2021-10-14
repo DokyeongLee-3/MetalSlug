@@ -27,6 +27,11 @@ public:
         return m_Info;
     }
 
+    void SetCenter(const Vector2& Center)
+    {
+        m_Info.Center = Center;
+    }
+
     virtual float GetBottom()	const
     {
         return m_Info.Center.y + m_Info.Radius;

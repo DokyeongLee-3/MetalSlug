@@ -31,6 +31,7 @@ enum ECollision_Channel
 	Channel_PlayerAttack,
 	Channel_MonsterAttack,
 	Channel_Obstacle,
+	Channel_GenTrigger,
 	Channel_Max
 };
 

@@ -206,5 +206,15 @@ public:
 
 		return Window;
 	}
+
+	CUIWindow* FindUIWindow(const std::string& Name)
+	{
+		for (int i = 0; i < m_UICount; ++i)
+		{
+			if (m_UIArray[i]->GetName() == Name)
+				return m_UIArray[i];
+		}
+		return nullptr;
+	}
 };
 

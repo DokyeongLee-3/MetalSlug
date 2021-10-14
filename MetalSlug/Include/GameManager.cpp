@@ -14,7 +14,8 @@ bool CGameManager::m_Loop = true;
 
 CGameManager::CGameManager() :
 	m_Timer(nullptr),
-	m_TimeScale(1.f)
+	m_TimeScale(1.f),
+	m_PlayerCredit(1)
 {
 }
 
