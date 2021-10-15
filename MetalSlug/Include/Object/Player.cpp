@@ -75,7 +75,7 @@ bool CPlayer::Init()
 
 	m_GravityAccel = 13.f;
 	m_MoveSpeed = 400.f;
-	m_ZOrder = 6;
+	m_ZOrder = 7;
 	m_ObjType = EObject_Type::Player;
 
 	// 피봇을 밭밑으로 보통 잡는다
@@ -245,7 +245,7 @@ void CPlayer::Update(float DeltaTime)
 
 	if (m_BottomAnimation)
 		m_BottomAnimation->Update(DeltaTime);
-
+	
 
 	// 중력을 적용한다.
 	if (!m_IsGround && m_PhysicsSimulate)
@@ -1508,6 +1508,8 @@ void CPlayer::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 			ChangeBottomAnimation("PlayerDeathLeft");
 		}
 		HideCollider();
+
+		//return;
 	}
 
 	if (Dest->GetName() == "CloseKnife")
@@ -1527,13 +1529,20 @@ void CPlayer::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 		}
 
 		HideCollider();
+
+		//return;
 	}
 
-	if (Dest->GetName() == "ArabianGen1")
+	if (Dest->GetName() == "GenPhase1")
 	{
-		((CMainScene*)m_Scene)->GenArabian1();
+		((CMainScene*)m_Scene)->GenPhase1();
 
 		Dest->Destroy();
+
+		// GenPhase와 충돌한 Player의 충돌체의
+		// m_CollisionList에서도 이제 GenPhase충돌체를
+		// 지워준다
+		Dest->ClearCollisionList();
 	}
 
 	if (Dest->GetName() == "StagePixel")

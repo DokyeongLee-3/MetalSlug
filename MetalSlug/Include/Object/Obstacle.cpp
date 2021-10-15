@@ -30,7 +30,7 @@ bool CObstacle::Init()
 	// Player의 ZOrder가 6이다
 	if (m_Name == "FrontObstacle")
 	{
-		SetZOrder(7);
+		SetZOrder(8);
 		SetTexture("FrontObstacle");
 	}
 

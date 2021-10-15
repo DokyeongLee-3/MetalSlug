@@ -5,6 +5,7 @@ class CColliderSphere :
     public CCollider
 {
     friend class CGameObject;
+    friend class CBullet;
 
 protected:
     CColliderSphere();

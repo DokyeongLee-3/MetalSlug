@@ -21,6 +21,7 @@ CCollider::CCollider(const CCollider& collider)	:
 	m_Type = collider.m_Type;
 	m_Offset = collider.m_Offset;
 	m_Profile = collider.m_Profile;
+	m_Name = collider.m_Name;
 }
 
 CCollider::~CCollider()

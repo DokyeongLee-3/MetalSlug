@@ -107,6 +107,7 @@ private:
 
 public:
 	void ClearCallback();
+	bool EraseCallback(const std::string Name);
 
 public:
 	template <typename T>

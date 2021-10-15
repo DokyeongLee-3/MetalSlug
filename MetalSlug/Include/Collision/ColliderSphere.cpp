@@ -33,6 +33,8 @@ bool CColliderSphere::Init()
 	if (!CCollider::Init())
 		return false;
 
+	m_Type = ECollider_Type::Sphere;
+
 	return true;
 }
 

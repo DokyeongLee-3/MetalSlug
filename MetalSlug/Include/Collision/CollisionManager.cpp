@@ -28,6 +28,7 @@ bool CCollisionManager::Init()
 	CreateProfile("Monster", Channel_Monster, true);
 	CreateProfile("PlayerAttack", Channel_PlayerAttack, true);
 	CreateProfile("MonsterAttack", Channel_MonsterAttack, true);
+	CreateProfile("NPC", Channel_NPC, true);
 	CreateProfile("Obstacle", Channel_Obstacle, true);
 	CreateProfile("GenTrigger", Channel_GenTrigger, true);
 
@@ -46,19 +47,25 @@ bool CCollisionManager::Init()
 	SetCollisionState("PlayerAttack", Channel_MonsterAttack, ECollision_State::Ignore);
 	SetCollisionState("PlayerAttack", Channel_Obstacle, ECollision_State::Ignore);
 
-
 	SetCollisionState("MonsterAttack", Channel_Monster, ECollision_State::Ignore);
 	SetCollisionState("MonsterAttack", Channel_PlayerAttack, ECollision_State::Ignore);
 	SetCollisionState("MonsterAttack", Channel_MonsterAttack, ECollision_State::Ignore);
 	SetCollisionState("MonsterAttack", Channel_Obstacle, ECollision_State::Ignore);
 
+	SetCollisionState("Obstacle", Channel_Obstacle, ECollision_State::Ignore);
 	SetCollisionState("Obstacle", Channel_PlayerAttack, ECollision_State::Ignore);
 	SetCollisionState("Obstacle", Channel_MonsterAttack, ECollision_State::Ignore);
 
+	SetCollisionState("GenTrigger", Channel_GenTrigger, ECollision_State::Ignore);
 	SetCollisionState("GenTrigger", Channel_PlayerAttack, ECollision_State::Ignore);
 	SetCollisionState("GenTrigger", Channel_MonsterAttack, ECollision_State::Ignore);
 	SetCollisionState("GenTrigger", Channel_Monster, ECollision_State::Ignore);
 	SetCollisionState("GenTrigger", Channel_Obstacle, ECollision_State::Ignore);
+
+	SetCollisionState("NPC", Channel_NPC, ECollision_State::Ignore);
+	SetCollisionState("NPC", Channel_MonsterAttack, ECollision_State::Ignore);
+	SetCollisionState("NPC", Channel_Player, ECollision_State::Ignore);
+	SetCollisionState("NPC", Channel_Monster, ECollision_State::Ignore);
 
 	return true;
 }

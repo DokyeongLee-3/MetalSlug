@@ -71,6 +71,11 @@ bool CKnife::Init()
 
 void CKnife::Update(float DeltaTime)
 {
+	if (!m_Start)
+	{
+		Start();
+	}
+
 	CGameObject::Update(DeltaTime);
 
 	// 땅에 꼽히는 프레임은 땅이랑 충돌됐을 때부터 시작

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Monster.h"
-#include "Player.h"
+
 
 class CArabian :
     public CMonster
@@ -13,7 +13,7 @@ private:
     float m_ThrowDistance;
     float m_SwingDistance;
     EArabian_State m_State;
-    CPlayer* m_Target;
+    class CPlayer* m_Target;
     bool m_AttackTime;
     // 애니메이션 동작중에 끊으면 안될 때 true로 해두기
     bool m_Changing;

@@ -30,6 +30,7 @@ enum ECollision_Channel
 	Channel_Monster,
 	Channel_PlayerAttack,
 	Channel_MonsterAttack,
+	Channel_NPC,
 	Channel_Obstacle,
 	Channel_GenTrigger,
 	Channel_Max
@@ -53,8 +54,8 @@ enum class EButton_State
 enum class EObject_Type
 {
 	GameObject,
-	Character,
 	Player,
+	Monster,
 	Bullet,
 	Effect,
 	Obstacle,
@@ -65,5 +66,23 @@ enum class EArabian_State
 {
 	Shuffle,
 	Trace,
+	Attack,
+	Jump
+};
+
+enum class ECamelArabian_State
+{
+	Idle,
+	Run,
 	Attack
+};
+
+enum class ENPC_State
+{
+	Idle,
+	Escape,
+	Walk,
+	Give,
+	Salute,
+	Run
 };

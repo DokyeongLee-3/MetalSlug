@@ -4,8 +4,7 @@
 #include "../Scene/Scene.h"
 #include "../Collision/ColliderBox.h"
 #include "../GameManager.h"
-#include "../Scene/Scene.h"
-
+#include "Player.h"
 
 
 CArabian::CArabian()	:
@@ -18,7 +17,7 @@ CArabian::CArabian()	:
 	m_ShuffleTime(0),
 	m_ShuffleLimit(0)
 {
-	m_ObjType = EObject_Type::Character;
+	m_ObjType = EObject_Type::Monster;
 }
 
 CArabian::CArabian(const CArabian& obj)	:
@@ -27,8 +26,10 @@ CArabian::CArabian(const CArabian& obj)	:
 	m_ThrowDistance = obj.m_ThrowDistance;
 	m_State = EArabian_State::Shuffle;
 	m_Target = obj.m_Target;
-
-	
+	m_ZOrder = obj.m_ZOrder;
+	m_GravityAccel = obj.m_GravityAccel;
+	m_MoveSpeed = obj.m_MoveSpeed;
+	m_JumpVelocity = obj.m_JumpVelocity;;
 }
 
 CArabian::~CArabian()
@@ -45,7 +46,7 @@ bool CArabian::Init()
 	if(!CMonster::Init())
 		return false;
 
-	m_ObjType = EObject_Type::Character;
+	m_ObjType = EObject_Type::Monster;
 	m_State = EArabian_State::Shuffle;
 
 	m_PhysicsSimulate = true;
@@ -53,6 +54,7 @@ bool CArabian::Init()
 	m_ZOrder = 6;
 	m_GravityAccel = 10.f;
 	m_MoveSpeed = 70.f;
+	m_JumpVelocity = 30.f;
 	m_Pivot = Vector2(0.5f, 1.f);
 
 	SetTarget((CPlayer*)m_Scene->GetPlayer());
@@ -83,6 +85,15 @@ void CArabian::Update(float DeltaTime)
 		FiniteState();
 
 	std::string CurAnim = m_Animation->GetCurrentAnimation()->Sequence->GetName();
+
+	if (m_Jump)
+	{
+		if (CurAnim.find("Right") != std::string::npos)
+			m_Pos.x += 100.f * DeltaTime * m_TimeScale;
+
+		else if (CurAnim.find("Left") != std::string::npos)
+			m_Pos.x -= 100.f * DeltaTime * m_TimeScale;
+	}
 
 	if (CurAnim.find("RunLeft") != std::string::npos)
 	{
@@ -193,12 +204,13 @@ CArabian* CArabian::Clone()
 
 void CArabian::FiniteState()
 {
+	std::string CurAnim = m_Animation->GetCurrentAnimation()->Sequence->GetName();
+
 	// 애니메이션 동작중에 있으면 다른 애니메이션으로 전환 금지
 	if (m_Changing)
 		return;
 
-	std::string CurAnim = m_Animation->GetCurrentAnimation()->Sequence->GetName();
-
+	// Player랑 마주보는 상황이 아니면 방향전환
 	if (m_Pos.x - m_Target->GetPos().x > 0 &&
 		CurAnim.find("Right") != std::string::npos)
 	{
@@ -228,11 +240,6 @@ void CArabian::FiniteState()
 				&& YDist <= 100.f && YDist >= -100.f)
 			{
 				m_State = EArabian_State::Attack;
-
-				int Frame = m_Animation->GetCurrentAnimation()->Frame;
-
-				if (Frame == 1)
-					int a = 3;
 			}
 		}
 
@@ -290,8 +297,8 @@ void CArabian::AddArabianAnimation()
 	AddAnimation("ArabianDeathAnimationRight2", false, 1.4f, 1.f, true);
 	AddAnimation("ArabianDeathAnimationLeft3", false, 2.f);
 	AddAnimation("ArabianDeathAnimationRight3", false, 2.f, 1.f, true);
-	AddAnimation("ArabianJumpLeft", false, 1.f);
-	AddAnimation("ArabianJumpRight", false, 1.f, 1.f, true);
+	AddAnimation("ArabianJumpLeft", false, 0.4f);
+	AddAnimation("ArabianJumpRight", false, 0.4f, 1.f, true);
 	AddAnimation("ArabianTurnLeft", false, 0.2f);
 	AddAnimation("ArabianTurnRight", false, 0.2f, 1.f, true);
 
@@ -364,6 +371,10 @@ void CArabian::AddArabianAnimation()
 
 void CArabian::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 {
+	std::string CurAnim = m_Animation->GetCurrentAnimation()->Sequence->GetName();
+	if (m_Changing)
+		m_Changing = false;
+
 	if (Dest->GetName() == "StagePixel")
 	{
 		m_IsGround = true;
@@ -376,6 +387,15 @@ void CArabian::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 		m_JumpVelocity = 0.f;
 		m_MoveSpeed = 200.f;
 
+		if (CurAnim.find("Right") != std::string::npos)
+		{
+			ChangeAnimation("ArabianShuffleRight");
+		}
+
+		else if (CurAnim.find("Left") != std::string::npos)
+		{
+			ChangeAnimation("ArabianShuffleLeft");
+		}
 	}
 
 	else if ((Dest->GetName() == "BackObstaclePixel") ||
@@ -389,12 +409,20 @@ void CArabian::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 		m_Pos.y = Src->GetHitPoint().y;
 		m_FallStartY = m_Pos.y;
 		m_JumpVelocity = 0.f;
+
+		if (CurAnim.find("Right") != std::string::npos)
+		{
+			ChangeAnimation("ArabianShuffleRight");
+		}
+
+		else if (CurAnim.find("Left") != std::string::npos)
+		{
+			ChangeAnimation("ArabianShuffleLeft");
+		}
 	}
 
 	else if ((Dest->GetName() == "BulletBody"))
 	{
-		std::string CurAnim = m_Animation->GetCurrentAnimation()->Sequence->GetName();
-
 		if (CurAnim.find("Right") != std::string::npos)
 		{
 			ChangeAnimation("ArabianDeathAnimationRight1");
@@ -459,8 +487,31 @@ void CArabian::CollisionStay(CCollider* Src, CCollider* Dest, float DeltaTime)
 	}
 }
 
-void CArabian::CollisionEnd(CCollider* Src, CCollider* Dest, float DeltaTime)
+void CArabian::CollisionEnd(CCollider* Src,
+	CCollider* Dest, float DeltaTime)
 {
+	std::string CurAnim = m_Animation->GetCurrentAnimation()->Sequence->GetName();
+
+	if (Dest->GetOwner()->GetName() == "FrontObstacle" ||
+		Dest->GetOwner()->GetName() == "BackObstacle" ||
+		Dest->GetOwner()->GetName() == "Stage")
+	{
+		m_IsGround = false;
+
+		if (CurAnim.find("Right") != std::string::npos)
+		{
+			ChangeAnimation("ArabianJumpRight");
+		}
+
+		else if (CurAnim.find("Left") != std::string::npos)
+		{
+			ChangeAnimation("ArabianJumpLeft");
+		}
+		m_Jump = true;
+		m_Changing = true;
+		m_State = EArabian_State::Jump;
+		m_JumpVelocity = 20.f;
+	}
 }
 
 void CArabian::Swing()

@@ -11,6 +11,7 @@ CEffectHit::CEffectHit()
 CEffectHit::CEffectHit(const CEffectHit& obj) :
 	CGameObject(obj)
 {
+
 }
 
 CEffectHit::~CEffectHit()

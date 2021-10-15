@@ -22,7 +22,6 @@ protected:
 	std::function<void(CCollider*, CCollider*, float)> m_BeginFunction;
 	std::function<void(CCollider*, CCollider*, float)> m_EndFunction;
 	std::function<void(CCollider*, CCollider*, float)> m_StayFunction;
-	
 
 	std::list<CSharedPtr<CCollider>> m_CollisionList;
 

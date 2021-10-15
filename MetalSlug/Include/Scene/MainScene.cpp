@@ -14,6 +14,8 @@
 #include "../Collision/ColliderPixel.h"
 #include "../Object/Arabian.h"
 #include "../Object/Knife.h"
+#include "../Object/CamelArabian.h"
+#include "../Object/NPC.h"
 
 CMainScene::CMainScene()
 {
@@ -29,6 +31,7 @@ bool CMainScene::Init()
 	LoadAnimationSequence();
 	LoadPlayerAnimationSequence();
 	LoadMonsterAnimationSequence();
+	LoadNPCAnimationSequence();
 	LoadBackground();
 	LoadSound();
 	LoadObstacle();
@@ -961,9 +964,128 @@ void CMainScene::LoadMonsterAnimationSequence()
 	Sequence = GetSceneResource()->FindAnimationSequence("ArabianJumpRight");
 	Sequence->SetFrameCount(9);
 
+	GetSceneResource()->CreateAnimationSequence("CamelArabianIdleLeft",
+		"CamelArabianIdleLeft", TEXT("Monster/CamelArabian/Idle/Left/CamelArabianIdle.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("CamelArabianIdleLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("CamelArabianIdleLeft");
+	Sequence->SetFrameCount(3);
+
+	GetSceneResource()->CreateAnimationSequence("CamelRunLeft",
+		"CamelRunLeft", TEXT("Monster/Vehicle/Run/Left/CamelRun.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("CamelRunLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("CamelRunLeft");
+	Sequence->SetFrameCount(12);
 
 	// Arabian의 FrameData 차례대로 읽어오기 
 	fopen_s(&FileStream, "FrameData/ArabianFrameData.fdat", "rb");
+
+	if (FileStream)
+	{
+		fseek(FileStream, 0, SEEK_SET);
+		while (!feof(FileStream))
+		{
+			char	Line[MAX_PATH] = {};
+			int AnimNameLength = -1;
+			AnimationFrameData Data = {};
+
+			fread(&AnimNameLength, sizeof(int), 1, FileStream);
+
+			if (AnimNameLength == -1)
+				break;
+
+			fread(Line, AnimNameLength, sizeof(char), FileStream);
+			std::string AnimName = Line;
+
+			Sequence = GetSceneResource()->FindAnimationSequence(AnimName);
+
+			int FrameCount = Sequence->GetFrameCount();
+
+			for (int i = 0; i < FrameCount; ++i)
+			{
+				fread(&Data, sizeof(AnimationFrameData), 1, FileStream);
+				GetSceneResource()->SetAnimationFrameData(AnimName, Data, i);
+				Data = {};
+			}
+		}
+	}
+
+	fclose(FileStream);
+}
+
+void CMainScene::LoadNPCAnimationSequence()
+{
+	FILE* FileStream;
+
+	GetSceneResource()->CreateAnimationSequence("HelperEscapeLeft",
+		"HelperEscapeLeft", TEXT("NPC/Escape/Left/HelperEscape.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("HelperEscapeLeft",
+		255, 255, 255);
+
+	CAnimationSequence* Sequence = GetSceneResource()->FindAnimationSequence("HelperEscapeLeft");
+	Sequence->SetFrameCount(4);
+
+	GetSceneResource()->CreateAnimationSequence("HelperGiveLeft",
+		"HelperGiveLeft", TEXT("NPC/Give/Left/HelperGive.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("HelperGiveLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("HelperGiveLeft");
+	Sequence->SetFrameCount(11);
+
+	GetSceneResource()->CreateAnimationSequence("HelperIdleLeft",
+		"HelperIdleLeft", TEXT("NPC/Idle/Left/HelperIdle.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("HelperIdleLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("HelperIdleLeft");
+	Sequence->SetFrameCount(5);
+
+	GetSceneResource()->CreateAnimationSequence("HelperRunLeft",
+		"HelperRunLeft", TEXT("NPC/Run/Left/HelperRun.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("HelperRunLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("HelperRunLeft");
+	Sequence->SetFrameCount(8);
+
+	GetSceneResource()->CreateAnimationSequence("HelperSaluteLeft",
+		"HelperSaluteLeft", TEXT("NPC/Salute/Left/HelperSalute.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("HelperSaluteLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("HelperSaluteLeft");
+	Sequence->SetFrameCount(14);
+
+	GetSceneResource()->CreateAnimationSequence("HelperWalkLeft",
+		"HelperWalkLeft", TEXT("NPC/Walk/Left/HelperWalk.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("HelperWalkLeft",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("HelperWalkLeft");
+	Sequence->SetFrameCount(12);
+
+	GetSceneResource()->CreateAnimationSequence("HelperWalkRight",
+		"HelperWalkRight", TEXT("NPC/Walk/Right/HelperWalk.bmp"));
+
+	GetSceneResource()->SetTextureColorKey("HelperWalkRight",
+		255, 255, 255);
+
+	Sequence = GetSceneResource()->FindAnimationSequence("HelperWalkRight");
+	Sequence->SetFrameCount(12);
+
+	fopen_s(&FileStream, "FrameData/NPCFrameData.fdat", "rb");
 
 	if (FileStream)
 	{
@@ -1045,13 +1167,25 @@ void CMainScene::CreateArabian()
 	Arabian2->SetThrowDistance(500.f);
 }
 
-void CMainScene::GenArabian1()
+void CMainScene::GenPhase1()
 {
 	CSharedPtr<CArabian> Arabian3 = CreateObject<CArabian>("Arabian3",
+		Vector2(2430.f, 300.f), Vector2(160.f, 162.f));
+	Arabian3->SetThrowDistance(200.f);
+
+	CSharedPtr<CArabian> Arabian4 = CreateObject<CArabian>("Arabian4",
+		Vector2(2100.f, 700.f), Vector2(160.f, 162.f));
+
+	CSharedPtr<CCamelArabian> CamelArabian = CreateObject<CCamelArabian>("CamelArabian",
+		Vector2(3200.f, 800.f), Vector2(160.f, 162.f));
+
+	CSharedPtr<CNPC> NPC1 = CreateObject<CNPC>("NPC1",
+		Vector2(2000.f, 500.f), Vector2(160.f, 162.f));
+
+	CSharedPtr<CNPC> NPC2 = CreateObject<CNPC>("NPC2",
 		Vector2(2200.f, 300.f), Vector2(160.f, 162.f));
-	Arabian3->SetThrowDistance(500.f);
 }
 
-void CMainScene::GenArabian2()
+void CMainScene::GenPhase2()
 {
 }

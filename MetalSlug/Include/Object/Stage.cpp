@@ -41,9 +41,9 @@ bool CStage::Init()
 	Pixel->SetCollisionProfile("Default");
 	Pixel->SetStartPos(0.f, 0.f);
 
-	CColliderBox* ArabianGen = AddCollider<CColliderBox>("ArabianGen1");
+	CColliderBox* ArabianGen = AddCollider<CColliderBox>("GenPhase1");
 	ArabianGen->SetExtent(60, 200);
-	ArabianGen->SetOffset(Vector2(1500.f, 730.f));
+	ArabianGen->SetOffset(Vector2(1450.f, 620.f));
 	ArabianGen->SetCollisionProfile("GenTrigger");
 
 	return true;

@@ -20,6 +20,8 @@ CBullet::CBullet(const CBullet& obj)	:
 {
 	m_Dir = obj.m_Dir;
 	m_Distance = obj.m_Distance;
+	m_MoveSpeed = obj.m_MoveSpeed;
+
 }
 
 CBullet::~CBullet()

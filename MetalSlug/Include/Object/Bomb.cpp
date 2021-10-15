@@ -116,7 +116,16 @@ void CBomb::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 {
 	std::string DestName = Dest->GetOwner()->GetName();
 
-	if (DestName == "Stage")
+	if (DestName.find("Arabian") != std::string::npos)
+	{
+		CEffectHit* Hit = m_Scene->CreateObject<CEffectHit>(
+		"BombExplosionEffect", "BombExplosionEffect",
+		m_Pos + Vector2(0.f, -130.f), Vector2(150.f, 311.f));
+
+		Destroy();
+	}
+
+	else if (DestName == "Stage")
 	{
 		if (m_CollisionCount == 0)
 		{
@@ -138,11 +147,4 @@ void CBomb::CollisionBegin(CCollider* Src, CCollider* Dest, float DeltaTime)
 		}
 	}
 
-	else if (DestName.find("Arabian") != std::string::npos)
-	{
-		CEffectHit* Hit = m_Scene->CreateObject<CEffectHit>(
-			"BombExplosionEffect", "BombExplosionEffect",
-			m_Pos + Vector2(0.f, -135.f), Vector2(150.f, 311.f));
-		Destroy();
-	}
 }

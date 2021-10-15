@@ -109,6 +109,9 @@
     <Filter Include="03.Object\06.Knife">
       <UniqueIdentifier>{120c66e1-54f0-438c-ab94-72a7c84a4e90}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03.Object\07.NPC">
+      <UniqueIdentifier>{04637f80-a47d-46c1-8636-bb07914fb1fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -248,6 +251,12 @@
     </ClCompile>
     <ClCompile Include="UI\NumberWidget.cpp">
       <Filter>07.UI\01.Widget</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\CamelArabian.cpp">
+      <Filter>03.Object\01.Character\01.Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\NPC.cpp">
+      <Filter>03.Object\07.NPC</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -424,6 +433,12 @@
     </ClInclude>
     <ClInclude Include="UI\NumberWidget.h">
       <Filter>07.UI\01.Widget</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\CamelArabian.h">
+      <Filter>03.Object\01.Character\01.Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\NPC.h">
+      <Filter>03.Object\07.NPC</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

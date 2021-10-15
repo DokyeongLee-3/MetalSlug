@@ -36,32 +36,33 @@ void CBackground::Update(float DeltaTime)
 
 	Vector2 CamPos = m_Scene->GetCamera()->GetPos();
 
-	if (GetName() == "Desert")
+
+	if (m_Name == "Desert")
 	{
 		SetPos((CamPos.x) / 8, this->GetPos().y);
 	}
 
-	else if (GetName() == "SandyWave1")
+	else if (m_Name == "SandyWave1")
 	{
 		SetPos((CamPos.x) / 5, this->GetPos().y);
 	}
 
-	else if (GetName() == "SandyWave2")
+	else if (m_Name == "SandyWave2")
 	{
 		SetPos(700.f + (CamPos.x) / 5, this->GetPos().y);
 	}
 
-	else if (GetName() == "SandyWave3")
+	else if (m_Name == "SandyWave3")
 	{
 		SetPos(1400.f + (CamPos.x) / 5, this->GetPos().y);
 	}
 
-	else if (GetName() == "SandyWave4")
+	else if (m_Name == "SandyWave4")
 	{
 		SetPos(2100.f + (CamPos.x) / 5, this->GetPos().y);
 	}
 
-	else if (GetName() == "Sky")
+	else if (m_Name == "Sky")
 	{
 		SetPos((CamPos.x) / 1.2f, this->GetPos().y);
 	}

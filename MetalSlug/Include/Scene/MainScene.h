@@ -25,14 +25,15 @@ private:
 	void LoadSound();
 	void LoadPlayerAnimationSequence();
 	void LoadMonsterAnimationSequence();
+	void LoadNPCAnimationSequence();
 	// 밟고 올라갈 수 있는 지형지물을 Load하는 함수
 	void LoadObstacle();
 	
 	void CreateArabian();
 	// 맨 처음 Gen충돌체(Front&Back Obstacle 직전에 있는)랑 만났을 때
 	// 호출되는 함수
-	void GenArabian1();
+	void GenPhase1();
 
-	void GenArabian2();
+	void GenPhase2();
 };
 

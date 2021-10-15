@@ -301,3 +301,24 @@ void CInput::ClearCallback()
 		}
 	}
 }
+
+bool CInput::EraseCallback(const std::string Name)
+{
+	auto iter = m_mapInfo.begin();
+	auto iterEnd = m_mapInfo.end();
+
+	for (; iter != iterEnd; ++iter)
+	{
+		bool Find = false;
+		if (iter->second->Name == Name)
+		{
+			Find = true;
+			for (int i = 0; i < KeyState_Max; ++i)
+			{
+				iter->second->Callback[i] = nullptr;
+			}
+			return true;
+		}
+	}
+	return false;
+}

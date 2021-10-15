@@ -122,7 +122,8 @@ void CUISelect::PauseAnimation()
 
 void CUISelect::FaceBlinkAnimation(float DeltaTime)
 {
-	//CInput::GetInst()->ClearCallback();
+	// 캐릭터 선택이 되고나서는 선택 키를 비활성화 시킨다
+	CInput::GetInst()->EraseCallback("Fire");
 	CUIImage* Background = FindWidget<CUIImage>("SelectBackground");
 
 	Background->ChangeAnimation("FaceBlinkAnimation");
